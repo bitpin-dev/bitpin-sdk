@@ -20,8 +20,6 @@ def snake(name: str) -> str:
 
 @pytest.mark.parametrize("feature", sorted(HAS))
 async def test_every_capability_has_a_method(client: Any, feature: str) -> None:
-    if feature.startswith("watch") and HAS[feature]:
-        pytest.skip("websocket methods arrive with the ws module")
     assert callable(getattr(client, snake(feature))), feature
 
 
