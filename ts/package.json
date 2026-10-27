@@ -47,7 +47,8 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "test:live": "vitest run -c vitest.live.config.ts"
   },
   "dependencies": {
     "centrifuge": "5.8.0",
