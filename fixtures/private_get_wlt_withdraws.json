@@ -1,0 +1,47 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "identifier": "5f0c6e3a9b1d4c7e8a2b3c4d5e6f7a8b",
+      "id": 7001,
+      "currency": "USDT",
+      "amount": "100",
+      "commission": "1",
+      "user_gain": "99",
+      "service": "main",
+      "state": "succeed",
+      "destination": null,
+      "crypto_details": {
+        "address": "TTestAddressDoNotUse000000000000000",
+        "network": "TRX",
+        "tx_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "tx_url": "https://tronscan.org/#/transaction/1111"
+      },
+      "description": "",
+      "short_description": null,
+      "created_at": "2026-10-25T12:00:00+03:30",
+      "closed_at": "2026-10-25T12:30:00+03:30",
+      "is_partially_successful": false
+    },
+    {
+      "identifier": "6a1d7f4b0c2e5d8f9b3c4d5e6f7a8b9c",
+      "id": 7002,
+      "currency": "IRT",
+      "amount": "5000000",
+      "commission": "0",
+      "user_gain": "5000000",
+      "service": "main",
+      "state": "wait_for_admin",
+      "destination": {
+        "iban": "IR000000000000000000000000",
+        "card": null
+      },
+      "crypto_details": null,
+      "description": "",
+      "short_description": null,
+      "created_at": "2026-10-26T08:00:00+03:30",
+      "closed_at": null,
+      "is_partially_successful": false
+    }
+  ]
+}

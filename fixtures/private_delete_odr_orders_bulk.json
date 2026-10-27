@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "body": {
+    "canceled_orders": [
+      535179385
+    ],
+    "not_canceled_orders": [
+      535179386
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": 123,
+      "currency": {
+        "currency": "IRT",
+        "name": "Toman",
+        "tradable": true,
+        "precision": "0"
+      },
+      "iban": "IR000000000000000000000000",
+      "card": "000000******0000",
+      "value": "IR000000000000000000000000",
+      "state": "verified"
+    }
+  ]
+}

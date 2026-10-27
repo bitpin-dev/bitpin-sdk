@@ -1,0 +1,26 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": 11,
+      "asset": "IRT",
+      "balance": "150000000",
+      "frozen": "3100000",
+      "service": "main"
+    },
+    {
+      "id": 12,
+      "asset": "BTC",
+      "balance": "0.0125",
+      "frozen": "0.001",
+      "service": "main"
+    },
+    {
+      "id": 13,
+      "asset": "USDT",
+      "balance": "0",
+      "frozen": "0",
+      "service": "main"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "currency": "IRT",
+      "name": "Toman",
+      "tradable": true,
+      "precision": "0"
+    },
+    {
+      "currency": "BTC",
+      "name": "Bitcoin",
+      "tradable": true,
+      "precision": "8"
+    },
+    {
+      "currency": "USDT",
+      "name": "Tether",
+      "tradable": true,
+      "precision": "2"
+    }
+  ]
+}

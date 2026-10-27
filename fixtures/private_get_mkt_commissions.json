@@ -1,0 +1,17 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "market": 1,
+      "symbol": "BTC_IRT",
+      "maker": 0.3,
+      "taker": 0.35
+    },
+    {
+      "market": 2,
+      "symbol": "USDT_IRT",
+      "maker": 0.1,
+      "taker": 0.15
+    }
+  ]
+}
