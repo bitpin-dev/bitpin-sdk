@@ -1,5 +1,9 @@
 # Changelog
 
+All notable changes to the Python SDK, written by release-please from Conventional Commits.
+
+# Changelog
+
 ## 0.1.0 (2026-10-27)
 
 
@@ -34,7 +38,3 @@
 * **ai:** agent instructions, rules, skills and permissions ([0b5989a](https://github.com/bitpin-dev/bitpin-sdk/commit/0b5989ad4a41323487d3d7efe0d711031796189a))
 * bilingual documentation and llms.txt ([69e7f6a](https://github.com/bitpin-dev/bitpin-sdk/commit/69e7f6a5e0c4cb276796c1c0c7c411a5626d0f45))
 * **examples:** add dry-run examples ([58620ac](https://github.com/bitpin-dev/bitpin-sdk/commit/58620ac1999ef10f2a503b43df6eae32a71d8cae))
-
-## Changelog
-
-All notable changes to the Python SDK, written by release-please from Conventional Commits.
