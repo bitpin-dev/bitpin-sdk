@@ -44,7 +44,7 @@ class BitpinWS:
         self._channels: set[str] = set()
         self._queues: dict[tuple[str, str, str], asyncio.Queue[Any]] = {}
         self._filters: dict[tuple[str, str, str], Callable[[Any], bool]] = {}
-        self._user_identifier: str | None = None
+        self._user_identifier: asyncio.Task[str] | None = None
 
     async def close(self) -> None:
         if self._transport is not None:
@@ -116,9 +116,18 @@ class BitpinWS:
             raise errors.AuthenticationError(
                 "api_key and secret_key are required for private channels"
             )
+        # One lookup shared by every concurrent watcher: ws-info allows 10 requests per minute.
         if self._user_identifier is None:
-            self._user_identifier = str((await self._ws_info())["user_identifier"])
-        return WS_CHANNELS["user_orders"].format(user_identifier=self._user_identifier)
+            self._user_identifier = asyncio.ensure_future(self._lookup_user_identifier())
+        try:
+            identifier = await asyncio.shield(self._user_identifier)
+        except Exception:
+            self._user_identifier = None
+            raise
+        return WS_CHANNELS["user_orders"].format(user_identifier=identifier)
+
+    async def _lookup_user_identifier(self) -> str:
+        return str((await self._ws_info())["user_identifier"])
 
     # --- public channels -------------------------------------------------------------
 

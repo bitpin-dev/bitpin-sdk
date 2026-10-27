@@ -7,6 +7,7 @@ from collections.abc import Awaitable, Callable
 from decimal import Decimal as D
 from typing import Any
 
+import httpx
 import pytest
 import respx
 
@@ -453,3 +454,36 @@ async def test_events_nobody_watches_are_not_queued(
         )
     assert "dropped" not in caplog.text
     task.cancel()
+
+
+async def test_concurrent_private_watchers_share_one_identifier_lookup(
+    ws: BitpinWS, transports: list[FakeTransport], mock: respx.MockRouter
+) -> None:
+    async def slow_ws_info(request: httpx.Request) -> httpx.Response:
+        await asyncio.sleep(0)  # a real network call yields to the event loop
+        return httpx.Response(200, json=body("credentials_post_usr_ws_info"))
+
+    info = mock.route(method="POST", path="/api/v1/usr/ws-info/").mock(side_effect=slow_ws_info)
+    tasks = [asyncio.ensure_future(ws.watch_orders(s)) for s in ("BTC/IRT", "USDT/IRT", None)]
+    await settle()
+    assert info.call_count == 2  # one for the identifier, one for the connection token
+    for task in tasks:
+        task.cancel()
+
+
+async def test_a_failed_identifier_lookup_can_be_retried(
+    fake_time: FakeTime, mock: respx.MockRouter
+) -> None:
+    route(mock, "credentials_post_usr_authenticate")
+    route(mock, "credentials_post_usr_ws_info", status=503, json_body=None)
+    client = AsyncBitpin(
+        {"api_key": "k", "secret_key": "s", "max_retries": 0},
+        clock=fake_time,
+        sleep=fake_time.async_sleep,
+    )
+    socket = BitpinWS(client, transport_factory=lambda url, token: FakeTransport(url, token))
+    with pytest.raises(errors.ExchangeNotAvailable):
+        await socket.watch_orders()
+    route(mock, "credentials_post_usr_ws_info")
+    assert await socket._user_channel() == "user:order_info#TESTUSR1"
+    await client.close()
