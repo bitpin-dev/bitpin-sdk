@@ -11,3 +11,4 @@
 - A missing capability is `has: false` plus an `en` and `fa` message that tells the user what to do instead.
 - Each endpoint has exactly one fixture, `fixtures/<endpoint id>.json`, in the shape the server returns today, with synthetic values (all-zero IBANs, `TTestAddress…` addresses).
 - When the server's response shape changes, update the fixture, then make every language pass.
+- `fixtures/expected.json` is what every SDK must parse the fixtures into, generated from the Python parsers by `scripts/gen_expected.py` (`--check` in the Python tests). The TypeScript and Go conformance tests compare against it, so a parser change lands in all three languages, and then the file is regenerated.

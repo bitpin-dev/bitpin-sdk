@@ -65,8 +65,12 @@ def render(spec: dict[str, Any]) -> str:
             f"\t{{status: {r['status']}, kind: {go_str(r['error'])}, paths: {go_strings(r.get('paths', []))}, "
             f"detail: {go_strings(r.get('detail', []))}}},"
         )
-    out += ["}", "", "// Has is the ccxt-style capability map: false means Bitpin doesn't offer it yet.",
-            "var Has = map[string]bool{"]
+    out += [
+        "}",
+        "",
+        "// Has is the ccxt-style capability map: false means Bitpin doesn't offer it yet.",
+        "var Has = map[string]bool{",
+    ]
     for k in sorted(spec["has"]):
         out.append(f"\t{go_str(k)}: {str(spec['has'][k]).lower()},")
     out += ["}", "", "var specNotSupported = map[string][2]string{"]
@@ -79,7 +83,9 @@ def render(spec: dict[str, Any]) -> str:
     out += ["}", ""]
     source = "\n".join(out)
     # gofmt aligns map literals; formatting here keeps --check stable.
-    return subprocess.run(["gofmt"], input=source, capture_output=True, text=True, check=True).stdout
+    return subprocess.run(
+        ["gofmt"], input=source, capture_output=True, text=True, check=True
+    ).stdout
 
 
 def main(argv: list[str]) -> int:

@@ -10,8 +10,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ORDER = [
-    "index", "quickstart", "authentication", "configuration", "rate-limits", "market-data",
-    "trading", "wallet", "websocket", "errors", "not-supported", "migrating-from-ccxt", "typescript", "go", "faq",
+    "index",
+    "quickstart",
+    "authentication",
+    "configuration",
+    "rate-limits",
+    "market-data",
+    "trading",
+    "wallet",
+    "websocket",
+    "errors",
+    "not-supported",
+    "migrating-from-ccxt",
+    "typescript",
+    "go",
+    "faq",
 ]
 
 
