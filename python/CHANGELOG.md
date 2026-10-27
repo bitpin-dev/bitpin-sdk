@@ -3,6 +3,26 @@
 All notable changes to the Python SDK, written by release-please from Conventional Commits.
 
 
+## [0.2.0](https://github.com/bitpin-dev/bitpin-sdk/compare/python-v0.1.0...python-v0.2.0) (2026-10-27)
+
+
+### Features
+
+* **python:** WebSocket streams for the sync client ([278262f](https://github.com/bitpin-dev/bitpin-sdk/commit/278262f5e651886275e6f7a628cdf6876c4c2c21)), closes [#7](https://github.com/bitpin-dev/bitpin-sdk/issues/7)
+* **spec:** choose the API domain (org, ir, market) ([d6b11d6](https://github.com/bitpin-dev/bitpin-sdk/commit/d6b11d66c1fd0488cee0d98ebacd901ca4ff599d))
+* **ts:** examples, live read-only suites, docs, CI and npm release ([839aeb5](https://github.com/bitpin-dev/bitpin-sdk/commit/839aeb5272b00a5d5fc874580678086ab0023901))
+
+
+### Bug fixes
+
+* **python:** share one ws-info lookup across concurrent private watchers ([15b38d0](https://github.com/bitpin-dev/bitpin-sdk/commit/15b38d0af1d363f84a3a6d0f6e2e8a801b2c554c))
+* **python:** stricter order checks, safer close, reject NaN token expiry ([c67923c](https://github.com/bitpin-dev/bitpin-sdk/commit/c67923c019c11a196c3c4e6f5127ac01cdd18953))
+
+
+### Dependencies
+
+* **python:** one version source so release PRs keep uv.lock fresh; allow the main scope in PR titles ([c5f01cd](https://github.com/bitpin-dev/bitpin-sdk/commit/c5f01cda7d62a5e84f78ef1add3408ce0675bfa0))
+
 ## 0.1.0 (2026-10-27)
 
 
