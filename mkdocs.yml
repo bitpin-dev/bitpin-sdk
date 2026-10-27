@@ -1,0 +1,74 @@
+site_name: Bitpin SDK
+site_url: https://bitpin-dev.github.io/bitpin-sdk/
+site_description: Official SDK for the Bitpin exchange API
+repo_url: https://github.com/bitpin-dev/bitpin-sdk
+repo_name: bitpin-dev/bitpin-sdk
+edit_uri: edit/main/docs/
+docs_dir: docs
+exclude_docs: |
+  design/
+  superpowers/
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: { icon: material/weather-sunny, name: Light mode }
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc: { permalink: true }
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: fa
+          name: فارسی
+          build: true
+          site_name: SDK بیت‌پین
+          nav_translations:
+            Home: خانه
+            Quickstart: شروع سریع
+            Authentication: احراز هویت
+            Configuration: پیکربندی
+            Rate limits: محدودیت نرخ
+            Market data: داده‌های بازار
+            Trading: معامله
+            Wallet: کیف پول
+            WebSocket: وب‌سوکت
+            Errors: خطاها
+            Not available yet: فعلاً موجود نیست
+            Migrating from ccxt: مهاجرت از ccxt
+            FAQ: پرسش‌های رایج
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Authentication: authentication.md
+  - Configuration: configuration.md
+  - Rate limits: rate-limits.md
+  - Market data: market-data.md
+  - Trading: trading.md
+  - Wallet: wallet.md
+  - WebSocket: websocket.md
+  - Errors: errors.md
+  - Not available yet: not-supported.md
+  - Migrating from ccxt: migrating-from-ccxt.md
+  - FAQ: faq.md
