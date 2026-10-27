@@ -22,7 +22,18 @@ err = client.CancelOrderByIdentifier(ctx, "bot-1")
 ## نسخه‌های پشتیبانی‌شده
 
 - **Go نسخهٔ ۱٫۲۶ یا بالاتر** (`go 1.26.0` در `go.mod`؛ آخرین نسخهٔ `centrifuge-go` آن را لازم دارد).
-- `go.mod` همچنین `toolchain go1.27.3` را مشخص می‌کند. با تنظیم پیش‌فرض `GOTOOLCHAIN=auto`، دستور `go` دقیقاً همان toolchain را دانلود می‌کند؛ مثل کاری که uv برای پایتون می‌کند. جایی که `proxy.golang.org` مسدود است (از ایران خطای 403 می‌دهد)، `GOTOOLCHAIN=local` را تنظیم کنید و از Go نسخهٔ ۱٫۲۶ یا بالاتر روی سیستم خودتان استفاده کنید.
+- `go.mod` همچنین `toolchain go1.27.3` را مشخص می‌کند. با تنظیم پیش‌فرض `GOTOOLCHAIN=auto`، دستور `go` دقیقاً همان toolchain را دانلود می‌کند؛ مثل کاری که uv برای پایتون می‌کند.
+
+### از داخل ایران
+
+`proxy.golang.org` فهرست ماژول‌ها را می‌دهد، ولی دانلودهایش به فضای ذخیرهٔ گوگل هدایت می‌شوند که از ایران خطای 403 می‌دهد؛ برای همین دانلود toolchain و گاهی `go get` شکست می‌خورد. این پروکسی‌ها از ایران هم ماژول و هم toolchain را می‌دهند (آزموده‌شده در ۲۷ اکتبر ۲۰۲۶): `goproxy.cn`، `mirrors.aliyun.com/goproxy` و `proxy.golang.com.cn`. `goproxy.io` دانلود را رد می‌کند.
+
+```bash
+go env -w GOPROXY=https://goproxy.cn,https://mirrors.aliyun.com/goproxy,direct
+go get github.com/bitpin-dev/bitpin-sdk/go   # toolchain مشخص‌شده هم خودکار دانلود می‌شود
+```
+
+checksumها همچنان با `sum.golang.org` بررسی می‌شوند که در دسترس است؛ `GOSUMDB` پیش‌فرض را نگه دارید. اگر هیچ پروکسی کار نکرد، `GOTOOLCHAIN=local` را تنظیم کنید و خودتان Go نسخهٔ ۱٫۲۶ یا بالاتر را نصب کنید.
 - نسخه‌ها با تگ `go/vX.Y.Z` منتشر می‌شوند؛ `go get github.com/bitpin-dev/bitpin-sdk/go@latest` جدیدترین را می‌گیرد.
 
 ## تفاوت با پایتون

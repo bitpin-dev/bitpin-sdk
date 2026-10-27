@@ -760,7 +760,18 @@ err = client.CancelOrderByIdentifier(ctx, "bot-1")
 ## Supported versions
 
 - **Go 1.26 or newer** (`go 1.26.0` in `go.mod`; the newest `centrifuge-go` needs it).
-- `go.mod` also pins `toolchain go1.27.3`. With the default `GOTOOLCHAIN=auto`, `go` downloads that exact toolchain, the way uv does for Python. Where `proxy.golang.org` is blocked (it returns 403 from Iran), set `GOTOOLCHAIN=local` and use a local Go 1.26 or newer.
+- `go.mod` also pins `toolchain go1.27.3`. With the default `GOTOOLCHAIN=auto`, `go` downloads that exact toolchain, the way uv does for Python.
+
+### From Iran
+
+`proxy.golang.org` serves module lists, but its downloads redirect to Google storage, which returns 403 from Iran. The toolchain download fails, and so can `go get`. These proxies serve modules **and** toolchains from Iran (checked 2026-10-27): `goproxy.cn`, `mirrors.aliyun.com/goproxy` and `proxy.golang.com.cn`. `goproxy.io` refuses downloads.
+
+```bash
+go env -w GOPROXY=https://goproxy.cn,https://mirrors.aliyun.com/goproxy,direct
+go get github.com/bitpin-dev/bitpin-sdk/go   # and the pinned toolchain downloads by itself
+```
+
+Checksums are still verified against `sum.golang.org`, which is reachable; keep the default `GOSUMDB`. If no proxy works, set `GOTOOLCHAIN=local` and install Go 1.26 or newer yourself.
 - Releases are tags `go/vX.Y.Z`; `go get github.com/bitpin-dev/bitpin-sdk/go@latest` picks the newest.
 
 ## Differences from Python

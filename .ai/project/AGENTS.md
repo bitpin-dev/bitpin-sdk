@@ -53,7 +53,7 @@ npm run build                                  # tsup (JS) + tsc (declarations)
 cd ../python && uv run python ../scripts/gen_ts.py   # after editing spec/bitpin.yaml
 ```
 
-Go, from `go/` (Go ≥ 1.26; set `GOTOOLCHAIN=local` where proxy.golang.org is blocked):
+Go, from `go/` (Go ≥ 1.26). From Iran, `go env -w GOPROXY=https://goproxy.cn,direct` first; proxy.golang.org downloads return 403 there:
 
 ```bash
 go test -race -cover ./...                     # gate: 90 % statements
