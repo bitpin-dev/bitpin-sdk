@@ -412,3 +412,23 @@ async def test_order_history_stops_on_a_repeated_cursor(
     result = await call(client.fetch_order_history(params={"paginate": True}))
     assert history.call_count == 2
     assert len(result) == 1
+
+
+@pytest.mark.parametrize(
+    ("type_", "params", "message"),
+    [
+        ("stop_limit", {"stopPrice": 0}, "stopPrice"),
+        ("oco", {"stopPrice": 1, "takeProfitPrice": -1}, "takeProfitPrice"),
+        ("stop_limit", {"stopPrice": 1, "triggerPrice": 2}, "both"),
+    ],
+)
+async def test_create_order_checks_trigger_prices(
+    client: Any, type_: str, params: dict[str, Any], message: str
+) -> None:
+    with pytest.raises(errors.InvalidOrder, match=message):
+        await call(client.create_order("BTC/IRT", type_, "buy", 1, 1, params))
+
+
+async def test_market_quote_amount_must_be_positive(client: Any) -> None:
+    with pytest.raises(errors.InvalidOrder, match="quoteAmount"):
+        await call(client.create_order("BTC/IRT", "market", "buy", params={"quoteAmount": 0}))

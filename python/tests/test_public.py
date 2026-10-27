@@ -156,3 +156,9 @@ async def test_describe_and_has(client: Any) -> None:
     assert "30m" in info["timeframes"]
     assert info["rateLimits"]["auth"] == "3/min"
     assert client.has["createOrder"] is True
+
+
+@pytest.mark.parametrize("limit", [0, -1])
+async def test_fetch_ohlcv_rejects_non_positive_limit(client: Any, limit: int) -> None:
+    with pytest.raises(errors.BadRequest, match="limit"):
+        await call(client.fetch_ohlcv("BTC/IRT", "1h", limit=limit))

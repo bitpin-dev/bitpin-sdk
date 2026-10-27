@@ -408,3 +408,16 @@ async def test_key_id_is_derived_once_per_client(
     for _ in range(3):
         await call(client.private_get_wlt_wallets())
     assert len(calls) == 1
+
+
+async def test_close_still_closes_http_when_the_websocket_close_fails(fake_time: FakeTime) -> None:
+    class BrokenSocket:
+        async def close(self) -> None:
+            raise RuntimeError("ws close failed")
+
+    client = AsyncBitpin(clock=fake_time, sleep=fake_time.async_sleep)
+    client._ws = BrokenSocket()
+    with pytest.raises(RuntimeError):
+        await client.close()
+    assert client._http.is_closed
+    assert client._ws is None
