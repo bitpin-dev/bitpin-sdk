@@ -575,11 +575,19 @@ class Bitpin:
         }
         query = {**filters, "start": since, "end": until}
         orders: list[Order] = []
+        seen_ids: set[str] = set()
+        seen_cursors: set[str] = set()
         while True:
             raw = self.request("private_get_odr_order_history", params=query)
-            orders.extend(parse.parse_history_order(row) for row in raw.get("results", []))
-            if not (paginate and raw.get("has_next") and raw.get("next_cursor")):
+            for row in raw.get("results", []):
+                order = parse.parse_history_order(row)
+                if order["id"] not in seen_ids:
+                    seen_ids.add(order["id"])
+                    orders.append(order)
+            cursor = raw.get("next_cursor")
+            if not (paginate and raw.get("has_next") and cursor) or cursor in seen_cursors:
                 return orders
+            seen_cursors.add(cursor)
             # The cursor replaces start/end; the server doesn't keep the other filters.
             query = {**filters, "cursor": raw["next_cursor"]}
 
@@ -720,16 +728,20 @@ class Bitpin:
         """Walk an id-cursor list: ``offset`` means "ids below this", not a row count."""
         query = dict(query)
         max_pages = int(query.pop("maxPages", 100))
+        if query.get("limit") is None:
+            query["limit"] = CONSTANTS[_MAX_PAGE_SIZE[endpoint_id]]
+        limit = int(query["limit"])
         rows: list[Any] = []
+        offset: int | None = None
         for _ in range(max_pages):
             page = self.request(endpoint_id, params=query)
+            lowest = min((int(row["id"]) for row in page), default=None)
+            if lowest is None or (offset is not None and lowest >= offset):
+                break  # empty page, or the server didn't move past the last page
             rows.extend(page)
-            limit = query.get("limit")
-            if not page or (limit is not None and len(page) < int(limit)):
+            if len(page) < limit:
                 break
-            query["offset"] = min(int(row["id"]) for row in page)
-            if limit is None:
-                break
+            offset = query["offset"] = lowest
         return rows
 
     # --- websocket -------------------------------------------------------
@@ -871,6 +883,15 @@ def _iso(ms: int | None) -> str | None:
         return None
     return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).isoformat()
 
+
+#: Page size used by ``paginate=True`` when the caller gives no ``limit``.
+_MAX_PAGE_SIZE = {
+    "private_get_odr_orders": "orders_max_page_size",
+    "private_get_odr_fills": "fills_max_page_size",
+    "private_get_wlt_wallets": "wallets_max_page_size",
+    "private_get_wlt_deposits": "wallet_lists_max_page_size",
+    "private_get_wlt_withdraws": "wallet_lists_max_page_size",
+}
 
 _INVALID: Any = object()
 
