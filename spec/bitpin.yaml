@@ -1,0 +1,400 @@
+# Bitpin public API description: the single source of truth for every SDK language.
+#
+# Each language generates its endpoint table from this file and CI fails when the
+# generated code is stale. Values are the server's defaults; users override rate
+# limits and timeouts through their client config.
+#
+# Endpoint ids follow ccxt's implicit-API style: <auth>_<method>_<path without /api/vN/>.
+#   auth: public      - no token needed
+#         private     - sends "Authorization: Bearer <access token>"
+#         credentials - part of the auth flow; credentials or refresh token go in the body
+
+version: 1
+
+urls:
+  rest: https://api.bitpin.org
+  ws: wss://centrifugo.bitpin.org/connection/websocket
+  docs: https://docs.bitpin.ir
+
+constants:
+  access_token_ttl_seconds: 900
+  refresh_token_ttl_seconds: 2592000
+  token_refresh_margin_seconds: 120
+  bulk_orders_max: 10
+  orderbook_default_limit: 20
+  orderbook_max_limit: 50
+  candles_max_per_request: 10000
+  order_history_max_range_days: 90
+  order_history_default_limit: 50
+  order_history_max_limit: 200
+  fills_max_age_seconds: 86400
+  orders_max_page_size: 250
+  fills_max_page_size: 250
+  wallets_max_page_size: 1000
+  wallet_lists_max_page_size: 1000
+
+# limit requests per period. Buckets are per user when authenticated and per IP otherwise.
+rate_limits:
+  auth: { limit: 3, period: min }
+  refresh: { limit: 20, period: min }
+  ws_info: { limit: 10, period: min }
+  market_public: { limit: 200, period: min }
+  market_suspensions: { limit: 2, period: min }
+  tickers: { limit: 300, period: min }
+  commissions: { limit: 10000, period: day }
+  candles: { limit: 300, period: min }
+  orderbook: { limit: 60, period: min }
+  matches: { limit: 60, period: min }
+  order_create: { limit: 18000, period: hour }
+  order_read: { limit: 18000, period: hour }
+  order_cancel: { limit: 18000, period: hour }
+  order_bulk_create: { limit: 1800, period: hour }
+  order_bulk_cancel: { limit: 1800, period: hour }
+  fills: { limit: 300, period: min }
+  order_history: { limit: 5, period: sec }
+  wallet: { limit: 60, period: min }
+  deposit_address: { limit: 60, period: min }
+  currency_networks: { limit: 60, period: min }
+  deposits: { limit: 60, period: min }
+  withdraws: { limit: 60, period: min }
+  withdraw_otp: { limit: 10000, period: day }
+
+endpoints:
+  # --- auth -------------------------------------------------------------------
+  credentials_post_usr_authenticate:
+    method: POST
+    path: /api/v1/usr/authenticate/
+    auth: credentials
+    buckets: [auth]
+    idempotent: false
+    docs: authentication/token
+  credentials_post_usr_refresh_token:
+    method: POST
+    path: /api/v1/usr/refresh_token/
+    auth: credentials
+    buckets: [refresh]
+    idempotent: false
+    docs: authentication/refresh_token
+  credentials_post_usr_ws_info:
+    method: POST
+    path: /api/v1/usr/ws-info/
+    auth: credentials
+    buckets: [ws_info]
+    idempotent: false
+    docs: websocket/ws_info
+
+  # --- market data --------------------------------------------------------------
+  public_get_mkt_currencies:
+    method: GET
+    path: /api/v1/mkt/currencies/
+    auth: public
+    buckets: [market_public]
+    idempotent: true
+    docs: market-data/currencies
+  public_get_mkt_markets:
+    method: GET
+    path: /api/v1/mkt/markets/
+    auth: public
+    buckets: [market_public]
+    idempotent: true
+    docs: market-data/markets
+  public_get_mkt_networks:
+    method: GET
+    path: /api/v1/mkt/networks/
+    auth: public
+    buckets: [market_public]
+    idempotent: true
+    docs: market-data/networks
+  private_get_mkt_markets_suspensions:
+    method: GET
+    path: /api/v1/mkt/markets/suspensions/
+    auth: private
+    buckets: [market_suspensions]
+    idempotent: true
+    docs: market-data/markets
+  public_get_mkt_tickers:
+    method: GET
+    path: /api/v1/mkt/tickers/
+    auth: public
+    buckets: [tickers]
+    idempotent: true
+    docs: market-data/tickers
+  public_get_mkt_candles:
+    method: GET
+    path: /api/v1/mkt/candles/
+    auth: public
+    buckets: [candles]
+    idempotent: true
+    docs: market-data/candles
+  private_get_mkt_commissions:
+    method: GET
+    path: /api/v1/mkt/commissions/
+    auth: private
+    buckets: [commissions]
+    idempotent: true
+    docs: market-data/commissions
+  public_get_mth_orderbook_symbol:
+    method: GET
+    path: /api/v1/mth/orderbook/{symbol}/
+    auth: public
+    buckets: [orderbook]
+    idempotent: true
+    docs: market-data/orderbook
+  public_get_mth_matches_symbol:
+    method: GET
+    path: /api/v1/mth/matches/{symbol}/
+    auth: public
+    buckets: [matches]
+    idempotent: true
+    docs: market-data/matches
+
+  # --- orders -------------------------------------------------------------------
+  private_post_odr_orders:
+    method: POST
+    path: /api/v1/odr/orders/
+    auth: private
+    buckets: [order_create]
+    idempotent: false
+    docs: order/place_order
+  private_get_odr_orders:
+    method: GET
+    path: /api/v1/odr/orders/
+    auth: private
+    buckets: [order_read]
+    idempotent: true
+    docs: order/list
+  private_get_odr_orders_id:
+    method: GET
+    path: /api/v1/odr/orders/{id}/
+    auth: private
+    buckets: [order_read]
+    idempotent: true
+    docs: order/get
+  private_delete_odr_orders_id:
+    method: DELETE
+    path: /api/v1/odr/orders/{id}/
+    auth: private
+    buckets: [order_cancel]
+    idempotent: false
+    docs: order/cancel
+  private_delete_odr_orders_identifier_identifier:
+    method: DELETE
+    path: /api/v1/odr/orders/identifier/{identifier}/
+    auth: private
+    buckets: [order_cancel]
+    idempotent: false
+    docs: order/cancel-identifier
+  private_post_odr_orders_bulk:
+    method: POST
+    path: /api/v1/odr/orders/bulk/
+    auth: private
+    # The server counts a bulk create against the bulk-cancel budget as well.
+    buckets: [order_bulk_create, order_bulk_cancel]
+    idempotent: false
+    docs: order/Bulk Orders/Place Bulk Orders
+  private_delete_odr_orders_bulk:
+    method: DELETE
+    path: /api/v1/odr/orders/bulk/
+    auth: private
+    buckets: [order_bulk_cancel]
+    idempotent: false
+    docs: order/Bulk Orders/Cancel Bulk Orders
+  private_get_odr_fills:
+    method: GET
+    path: /api/v1/odr/fills/
+    auth: private
+    buckets: [fills]
+    idempotent: true
+    docs: order/fills
+  private_get_odr_order_history:
+    method: GET
+    path: /api/v1/odr/order_history/
+    auth: private
+    buckets: [order_history]
+    idempotent: true
+    docs: order/order-history
+
+  # --- wallet -------------------------------------------------------------------
+  private_get_wlt_wallets:
+    method: GET
+    path: /api/v1/wlt/wallets/
+    auth: private
+    buckets: [wallet]
+    idempotent: true
+    docs: wallet/wallet
+  private_get_wlt_account_numbers:
+    method: GET
+    path: /api/v1/wlt/account_numbers/
+    auth: private
+    buckets: [wallet]
+    idempotent: true
+    docs: wallet/account_number
+  # Returns the existing active address and creates one only if none exists,
+  # so it is safe to retry.
+  private_post_wlt_address:
+    method: POST
+    path: /api/v2/wlt/address/
+    auth: private
+    buckets: [deposit_address]
+    idempotent: true
+    docs: wallet/deposit
+  private_get_wlt_networks:
+    method: GET
+    path: /api/v2/wlt/networks/
+    auth: private
+    buckets: [currency_networks]
+    idempotent: true
+    docs: market-data/networks
+  private_get_wlt_deposits:
+    method: GET
+    path: /api/v2/wlt/deposits/
+    auth: private
+    buckets: [deposits]
+    idempotent: true
+    docs: wallet/deposit
+  private_get_wlt_withdraws:
+    method: GET
+    path: /api/v2/wlt/withdraws/
+    auth: private
+    buckets: [withdraws]
+    idempotent: true
+    docs: wallet/withdraw
+  private_post_wlt_withdraws:
+    method: POST
+    path: /api/v2/wlt/withdraws/
+    auth: private
+    buckets: [withdraws]
+    idempotent: false
+    docs: wallet/withdraw
+  private_post_wlt_withdraws_verify_otp_id:
+    method: POST
+    path: /api/v1/wlt/withdraws/verify/otp/{id}/
+    auth: private
+    buckets: [withdraw_otp]
+    idempotent: false
+    docs: wallet/withdraw
+  private_post_wlt_withdraws_retry_id:
+    method: POST
+    path: /api/v1/wlt/withdraws/retry/{id}/
+    auth: private
+    buckets: [withdraw_otp]
+    idempotent: false
+    docs: wallet/withdraw
+
+# How HTTP errors map to SDK exceptions. Rules are checked in order; the first match wins.
+# match fields: status (required), paths (endpoint id prefixes), detail (substrings of the
+# response "detail" or "code", case-insensitive).
+errors:
+  - { status: 429, error: RateLimitExceeded }
+  - { status: 401, error: AuthenticationError }
+  - { status: 406, paths: [credentials_post_usr_authenticate, credentials_post_usr_ws_info], error: AuthenticationError }
+  - { status: 403, error: PermissionDenied }
+  - { status: 404, paths: [private_get_odr_orders_id, private_delete_odr_orders], error: OrderNotFound }
+  - { status: 404, error: BadRequest }
+  - { status: 406, detail: [insufficent_balance, insufficent_frozen, insufficent_pool_balance, insufficient], error: InsufficientFunds }
+  - { status: 406, detail: [cancel_order_not_allowed, not allowed], error: InvalidOrder }
+  - { status: 400, detail: [invalid_otp, otp1_already_verified, extra_try], error: InvalidOTP }
+  - { status: 400, paths: [private_post_odr_orders], error: InvalidOrder }
+  - { status: 400, error: BadRequest }
+  - { status: 406, error: ExchangeError }
+  - { status: 500, error: ExchangeNotAvailable }
+  - { status: 502, error: ExchangeNotAvailable }
+  - { status: 503, error: ExchangeNotAvailable }
+  - { status: 504, error: ExchangeNotAvailable }
+
+# ccxt-style capability map. false = Bitpin does not offer it yet; the method exists and
+# raises NotSupported with the message below.
+has:
+  fetchMarkets: true
+  fetchCurrencies: true
+  fetchTicker: true
+  fetchTickers: true
+  fetchOrderBook: true
+  fetchTrades: true
+  fetchOHLCV: true
+  fetchTradingFee: true
+  fetchTradingFees: true
+  fetchBalance: true
+  createOrder: true
+  createOrders: true
+  cancelOrder: true
+  cancelOrders: true
+  fetchOrder: true
+  fetchOrders: true
+  fetchOpenOrders: true
+  fetchClosedOrders: true
+  fetchMyTrades: true
+  fetchDepositAddress: true
+  fetchDeposits: true
+  fetchWithdrawals: true
+  withdraw: true
+  watchTicker: true
+  watchOHLCV: true
+  watchOrderBook: true
+  watchTrades: true
+  watchOrders: true
+  watchMyTrades: true
+  cancelAllOrders: false
+  editOrder: false
+  fetchAccounts: false
+  fetchLedger: false
+  transfer: false
+  fetchDepositWithdrawFees: false
+  fetchPositions: false
+  setLeverage: false
+  createDepositAddress: false
+  watchBalance: false
+  watchTickers: false
+  sandbox: false
+
+not_supported:
+  cancelAllOrders:
+    en: "Bitpin doesn't offer cancel-all yet. Use cancel_orders() with up to 10 ids at a time."
+    fa: "بیت‌پین فعلاً لغو همهٔ سفارش‌ها را ارائه نمی‌دهد. از cancel_orders() با حداکثر ۱۰ شناسه در هر درخواست استفاده کنید."
+  editOrder:
+    en: "Bitpin doesn't support editing orders yet. Cancel the order and place a new one."
+    fa: "بیت‌پین فعلاً ویرایش سفارش را پشتیبانی نمی‌کند. سفارش را لغو کنید و سفارش جدید ثبت کنید."
+  fetchAccounts:
+    en: "Bitpin doesn't offer account or user info through the public API yet."
+    fa: "بیت‌پین فعلاً اطلاعات حساب کاربری را از طریق API عمومی ارائه نمی‌دهد."
+  fetchLedger:
+    en: "Bitpin doesn't offer a ledger endpoint yet. Use fetch_deposits(), fetch_withdrawals() and fetch_my_trades()."
+    fa: "بیت‌پین فعلاً دفتر کل (ledger) ارائه نمی‌دهد. از fetch_deposits()، fetch_withdrawals() و fetch_my_trades() استفاده کنید."
+  transfer:
+    en: "Bitpin doesn't offer transfers between wallet services through the public API yet."
+    fa: "بیت‌پین فعلاً انتقال بین سرویس‌های کیف پول را از طریق API عمومی ارائه نمی‌دهد."
+  fetchDepositWithdrawFees:
+    en: "Bitpin doesn't offer a deposit/withdraw fee endpoint yet. The fee of a withdrawal is returned when you create it."
+    fa: "بیت‌پین فعلاً سرویس کارمزد واریز و برداشت ارائه نمی‌دهد. کارمزد هر برداشت هنگام ثبت آن برگردانده می‌شود."
+  fetchPositions:
+    en: "Bitpin doesn't offer margin or positions through the public API yet."
+    fa: "بیت‌پین فعلاً معاملات اهرمی و پوزیشن‌ها را از طریق API عمومی ارائه نمی‌دهد."
+  setLeverage:
+    en: "Bitpin doesn't offer margin or leverage through the public API yet."
+    fa: "بیت‌پین فعلاً معاملات اهرمی را از طریق API عمومی ارائه نمی‌دهد."
+  createDepositAddress:
+    en: "Bitpin gives each user one address per network. Use fetch_deposit_address(), which creates it on first use."
+    fa: "بیت‌پین برای هر کاربر روی هر شبکه یک آدرس می‌دهد. از fetch_deposit_address() استفاده کنید؛ بار اول آدرس را می‌سازد."
+  watchBalance:
+    en: "Bitpin doesn't publish balance updates over WebSocket yet. Poll fetch_balance()."
+    fa: "بیت‌پین فعلاً تغییرات موجودی را روی وب‌سوکت منتشر نمی‌کند. از fetch_balance() استفاده کنید."
+  watchTickers:
+    en: "Bitpin doesn't document an all-markets ticker channel yet. Use watch_ticker() per symbol or fetch_tickers()."
+    fa: "بیت‌پین فعلاً کانال قیمت همهٔ بازارها را مستند نکرده است. از watch_ticker() برای هر بازار یا fetch_tickers() استفاده کنید."
+  sandbox:
+    en: "Bitpin has no sandbox or testnet. Every call reaches the real exchange; the examples default to dry-run."
+    fa: "بیت‌پین محیط آزمایشی (sandbox) ندارد. هر درخواست به صرافی واقعی می‌رسد؛ مثال‌ها به‌صورت پیش‌فرض اجرای آزمایشی دارند."
+
+ws:
+  channels:
+    market: "market:{symbol}"
+    orderbook: "orderbook:{symbol}"
+    matches: "matches:{symbol}"
+    user_orders: "user:order_info#{user_identifier}"
+  events:
+    currency_price_update: market
+    candle_update: market
+    market_data: orderbook
+    matches_update: matches
+    user_order_update: user_orders
+    user_match_update: user_orders
