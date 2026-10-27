@@ -7,12 +7,18 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      ts-tag:
+        description: "Publish an existing TypeScript release again, e.g. ts-v0.1.2 (when its publish step failed)"
+        required: true
 
 permissions:
   contents: read
 
 jobs:
   release-please:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -75,7 +81,11 @@ jobs:
 
   build-ts:
     needs: release-please
-    if: needs.release-please.outputs.ts-released == 'true'
+    # On a manual run, release-please is skipped and the tag comes from the input.
+    if: >-
+      always() &&
+      (needs.release-please.outputs.ts-released == 'true' ||
+       (github.event_name == 'workflow_dispatch' && startsWith(inputs.ts-tag, 'ts-v')))
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -83,7 +93,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.release-please.outputs.ts-tag }}
+          ref: ${{ inputs.ts-tag || needs.release-please.outputs.ts-tag }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
@@ -98,6 +108,7 @@ jobs:
 
   publish-ts:
     needs: [release-please, build-ts]
+    if: always() && needs.build-ts.result == 'success'
     runs-on: ubuntu-latest
     environment:
       name: npm
@@ -119,12 +130,13 @@ jobs:
       - name: Stage on npm
         # The trusted publisher may only stage: a maintainer makes the version live on
         # npmjs.com (or `npm stage approve <id>`) with 2FA, so CI alone can't release.
-        run: npm stage publish dist/*.tgz --provenance --access public
+        # "./" matters: npm reads "dist/x.tgz" as a GitHub repository shorthand.
+        run: npm stage publish ./dist/*.tgz --provenance --access public
       - name: Attach the package to the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ needs.release-please.outputs.ts-tag }}
-        run: gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY"
+          TAG: ${{ inputs.ts-tag || needs.release-please.outputs.ts-tag }}
+        run: gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --clobber
 
   announce-go:
     # Go modules have nothing to upload: the go/vX.Y.Z tag is the release. Asking the module
