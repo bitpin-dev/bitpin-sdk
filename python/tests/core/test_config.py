@@ -117,3 +117,13 @@ def test_repr_redacts_secrets() -> None:
     assert "SECRET-456" not in text
     assert "api_key='***'" in text
     assert "secret_key='***'" in text
+
+
+def test_token_store_is_carried_and_not_compared(tmp_path: Path) -> None:
+    from bitpin_sdk.token_store import FileTokenStore
+
+    store = FileTokenStore(tmp_path)
+    config = Config(token_store=store)
+    assert config.token_store is store
+    assert config == Config()
+    assert "token_store" not in repr(config)
