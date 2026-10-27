@@ -1,0 +1,38 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "symbol": "BTC_IRT",
+      "name": "Bitcoin/Toman",
+      "base": "BTC",
+      "quote": "IRT",
+      "tradable": true,
+      "suspended": false,
+      "price_precision": 0,
+      "base_amount_precision": 8,
+      "quote_amount_precision": 0
+    },
+    {
+      "symbol": "USDT_IRT",
+      "name": "Tether/Toman",
+      "base": "USDT",
+      "quote": "IRT",
+      "tradable": true,
+      "suspended": false,
+      "price_precision": 0,
+      "base_amount_precision": 2,
+      "quote_amount_precision": 0
+    },
+    {
+      "symbol": "ETH_USDT",
+      "name": "Ethereum/Tether",
+      "base": "ETH",
+      "quote": "USDT",
+      "tradable": false,
+      "suspended": true,
+      "price_precision": 2,
+      "base_amount_precision": 4,
+      "quote_amount_precision": 2
+    }
+  ]
+}

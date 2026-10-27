@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": 1,
+      "code": "BTC",
+      "title": "Bitcoin",
+      "title_fa": "بیت‌کوین",
+      "can_deposit": true,
+      "can_withdraw": true,
+      "address_pattern": "^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$"
+    },
+    {
+      "id": 2,
+      "code": "TRX",
+      "title": "Tron",
+      "title_fa": "ترون",
+      "can_deposit": true,
+      "can_withdraw": false,
+      "address_pattern": "^T[1-9A-HJ-NP-Za-km-z]{33}$"
+    }
+  ]
+}

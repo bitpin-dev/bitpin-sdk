@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "code": "BTC_IRT",
+      "suspended": false
+    },
+    {
+      "code": "ETH_USDT",
+      "suspended": true
+    }
+  ]
+}
