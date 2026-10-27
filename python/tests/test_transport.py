@@ -352,7 +352,9 @@ def test_sync_context_manager_closes_owned_client(fake_time: FakeTime) -> None:
     external.close()
 
 
-async def test_concurrent_burst_is_spread_not_fired_together(fake_time: FakeTime, mock: respx.MockRouter) -> None:
+async def test_concurrent_burst_is_spread_not_fired_together(
+    fake_time: FakeTime, mock: respx.MockRouter
+) -> None:
     route(mock, "public_get_mth_orderbook_symbol")
     sleeps: list[float] = []
 
@@ -366,7 +368,9 @@ async def test_concurrent_burst_is_spread_not_fired_together(fake_time: FakeTime
     await client.close()
 
 
-async def test_late_401_for_an_old_token_does_not_refresh_again(client: Any, mock: respx.MockRouter) -> None:
+async def test_late_401_for_an_old_token_does_not_refresh_again(
+    client: Any, mock: respx.MockRouter
+) -> None:
     first = route_body("credentials_post_usr_authenticate")["access"]
     route(mock, "credentials_post_usr_refresh_token", json_body={"access": make_jwt(NOW + 5000)})
     refresh = mock.routes[-1]
