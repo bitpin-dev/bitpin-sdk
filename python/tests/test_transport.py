@@ -364,3 +364,15 @@ async def test_concurrent_burst_is_spread_not_fired_together(fake_time: FakeTime
     await asyncio.gather(*(client.fetch_order_book("BTC/IRT") for _ in range(8)))
     assert sorted(sleeps) == [1.0, 1.0, 2.0, 2.0, 3.0, 3.0]
     await client.close()
+
+
+async def test_late_401_for_an_old_token_does_not_refresh_again(client: Any, mock: respx.MockRouter) -> None:
+    first = route_body("credentials_post_usr_authenticate")["access"]
+    route(mock, "credentials_post_usr_refresh_token", json_body={"access": make_jwt(NOW + 5000)})
+    refresh = mock.routes[-1]
+    route(mock, "private_get_wlt_wallets")
+    await call(client.private_get_wlt_wallets())  # authenticate: tokens hold `first`
+    client._tokens.set_access({"access": make_jwt(NOW + 4000)})  # another request refreshed
+    client._tokens.expire_access(first)  # the late 401 of a request that used `first`
+    await call(client.private_get_wlt_wallets())
+    assert refresh.call_count == 0

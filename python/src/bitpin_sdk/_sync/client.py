@@ -174,7 +174,7 @@ class Bitpin:
                 if req.auth != "private" or reauthenticated:
                     raise
                 reauthenticated = True
-                self._tokens.expire_access()
+                self._tokens.expire_access(token)
             except errors.NetworkError as exc:
                 wait = self._retry_delay(req, exc, attempt)
                 if wait is None:
