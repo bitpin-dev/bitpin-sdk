@@ -36,7 +36,7 @@ Without options, `new Bitpin()` reads `BITPIN_API_KEY`, `BITPIN_SECRET_KEY` and 
 | `timeout` | seconds | milliseconds, as in ccxt JS |
 | Bulk cancel | `cancel_orders(ids=[...])` | `cancelOrders({ ids: [...] })` or `{ identifiers: [...] }` |
 | Token store | `FileTokenStore()` | `new FileTokenStore()` (Node), async `TokenStore` interface |
-| WebSocket | `AsyncBitpin` only | built in |
+| WebSocket | both clients | built in |
 
 ## Methods
 

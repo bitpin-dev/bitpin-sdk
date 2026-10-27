@@ -36,7 +36,7 @@ err = client.CancelOrderByIdentifier(ctx, "bot-1")
 | خطاها | کلاس‌های استثنا | `errors.Is(err, bitpin.ErrInvalidOrder)` سلسله‌مراتب ccxt را دنبال می‌کند؛ `errors.As(err, &e)` با `*bitpin.Error` فیلدهای `Status`، `Body`، `RetryAfter`، `Code` و `Feature` را می‌دهد |
 | لغو گروهی | `cancel_orders(ids=[...])` | `CancelOrders(ctx, ids, nil)` یا `CancelOrders(ctx, nil, identifiers)` |
 | مهلت و لغو درخواست | `timeout` | `Config.Timeout` و همان `ctx` که می‌دهید |
-| وب‌سوکت | `AsyncBitpin` | داخلی؛ `Watch*` تا به‌روزرسانی بعدی یا پایان `ctx` منتظر می‌ماند |
+| وب‌سوکت | هر دو کلاینت | داخلی؛ `Watch*` تا به‌روزرسانی بعدی یا پایان `ctx` منتظر می‌ماند |
 
 ## متدها
 

@@ -21,7 +21,7 @@ Rules an agent must follow:
 - Fees: `fetch_trading_fees()`, `fetch_trading_fee(symbol)` (ratios, 0.003 = 0.3 %)
 - Orders: `create_order(symbol, type, side, amount, price, params)` with type limit | market | stop_limit | oco and params `clientOrderId`, `quoteAmount` (market by quote), `stopPrice`, `takeProfitPrice` (oco); `create_orders([...])` (≤10, atomic); `fetch_order(id)`; `fetch_orders(symbol, since, limit, params)`; `fetch_open_orders(...)`; `fetch_closed_orders(...)` (last 7 days); `fetch_order_history(symbol, since, until, limit, params)` (older, ≤90-day range); `cancel_order(id)`; `cancel_order_by_identifier(client_order_id)`; `cancel_orders(ids=[...] | identifiers=[...])` (≤10); `fetch_my_trades(symbol, since, limit)` (last 24 h only)
 - Wallet: `fetch_balance(params)` → `{"BTC": {"free","used","total"}, "free": {...}, ...}`; `fetch_bank_accounts()`; `fetch_deposit_address(code, network)`; `fetch_currency_networks(code)`; `fetch_deposits(code, since, limit)`; `fetch_withdrawals(code, since, limit)`; `withdraw(code, amount, address, tag, params={"network": ...})` (or `{"accountNumber": id}` for IRT, `{"alternativeAddress": phone_or_email}` for internal) then `verify_withdraw_otp(id, otp, second=False)`, `resend_withdraw_otp(id, first=True, voice_call=False)`
-- WebSocket (AsyncBitpin only; each call returns the next update): `watch_ticker(symbol)`, `watch_ohlcv(symbol, timeframe)`, `watch_order_book(symbol)`, `watch_trades(symbol)`, `watch_orders(symbol=None)`, `watch_my_trades(symbol=None)`
+- WebSocket (both clients; each call returns the next update, `timeout=` raises RequestTimeout): `watch_ticker(symbol)`, `watch_ohlcv(symbol, timeframe)`, `watch_order_book(symbol)`, `watch_trades(symbol)`, `watch_orders(symbol=None)`, `watch_my_trades(symbol=None)`
 - Low level: `request(endpoint_id, path_params, params=, body=)` and one implicit method per endpoint id, e.g. `public_get_mkt_tickers()`
 - Not offered by Bitpin yet (raise NotSupported): `cancel_all_orders`, `edit_order`, `fetch_accounts`, `fetch_ledger`, `transfer`, `fetch_deposit_withdraw_fees`, `fetch_positions`, `set_leverage`, `create_deposit_address`, `watch_balance`, `watch_tickers`, `set_sandbox_mode`
 
@@ -472,7 +472,7 @@ Destinations saved as trusted addresses on the Bitpin website need only the firs
 
 # WebSocket
 
-Streams use Bitpin's Centrifugo server and need the extra: `pip install "bitpin-sdk[ws]"`. They work with `AsyncBitpin` only. The sync `Bitpin` raises `NotSupported` for `watch_*`.
+Streams use Bitpin's Centrifugo server and need the extra: `pip install "bitpin-sdk[ws]"`. Both clients have them. `AsyncBitpin` runs them on your event loop. The sync `Bitpin` runs them on one background thread, and each `watch_*` call blocks until the next update; `close()` stops the thread.
 
 Each `watch_*` call subscribes the first time, then returns the next update. Every distinct watch (method, symbol and timeframe) has its own queue of updates that arrive between calls, so a loop doesn't miss any, and one task per market works. Two tasks awaiting the same watch split its updates, so give each watch one consumer:
 
@@ -495,6 +495,13 @@ async with AsyncBitpin(Config.from_env()) as client:
 Private channels need a key. The client gets the connection token and your channel name from `POST /api/v1/usr/ws-info/` (10 per minute) and renews the token when the connection does.
 
 Recommended pattern: read the initial state over REST (`fetch_order_book`, `fetch_open_orders`), then apply WebSocket updates. Bitpin pushes only on change.
+
+Every `watch_*` takes `timeout` (seconds); without an update in time it raises `RequestTimeout`:
+
+```python
+with Bitpin(Config.from_env()) as client:          # sync works too
+    book = client.watch_order_book("BTC/IRT", timeout=30)
+```
 
 One connection carries every channel. `await client.close()` closes it. For more control, use `bitpin_sdk.ws.BitpinWS(client, queue_size=1000)` directly.
 
@@ -675,7 +682,7 @@ Without options, `new Bitpin()` reads `BITPIN_API_KEY`, `BITPIN_SECRET_KEY` and 
 | `timeout` | seconds | milliseconds, as in ccxt JS |
 | Bulk cancel | `cancel_orders(ids=[...])` | `cancelOrders({ ids: [...] })` or `{ identifiers: [...] }` |
 | Token store | `FileTokenStore()` | `new FileTokenStore()` (Node), async `TokenStore` interface |
-| WebSocket | `AsyncBitpin` only | built in |
+| WebSocket | both clients | built in |
 
 ## Methods
 
@@ -767,7 +774,7 @@ err = client.CancelOrderByIdentifier(ctx, "bot-1")
 | Errors | exception classes | `errors.Is(err, bitpin.ErrInvalidOrder)` follows the ccxt hierarchy; `errors.As(err, &e)` with `*bitpin.Error` gives `Status`, `Body`, `RetryAfter`, `Code`, `Feature` |
 | Bulk cancel | `cancel_orders(ids=[...])` | `CancelOrders(ctx, ids, nil)` or `CancelOrders(ctx, nil, identifiers)` |
 | Timeouts, cancellation | `timeout` | `Config.Timeout` and the `ctx` you pass |
-| WebSocket | `AsyncBitpin` | built in; `Watch*` blocks until the next update or until `ctx` ends |
+| WebSocket | both clients | built in; `Watch*` blocks until the next update or until `ctx` ends |
 
 ## Methods
 
@@ -820,7 +827,7 @@ No. The server doesn't publish them. Set them with `Config(rate_limits={...})`; 
 Float rounding breaks prices like `0.1 + 0.2`. Market makers need exact values.
 
 **Can I use the sync client with WebSocket?**
-No. `watch_*` needs `AsyncBitpin`. You can use `Bitpin` for REST and run a separate async task for streams.
+Yes. `Bitpin.watch_*` blocks until the next update; the stream runs on one background thread that `close()` stops. Pass `timeout=` to stop waiting.
 
 **An order timed out. Was it placed?**
 Maybe. Orders are never retried automatically. Look it up by `clientOrderId` (see [Errors](errors.md)).
