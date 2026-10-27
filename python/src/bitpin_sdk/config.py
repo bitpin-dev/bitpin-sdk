@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 from bitpin_sdk._generated.spec import RATE_LIMITS, URLS
+from bitpin_sdk.token_store import TokenStore
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -76,6 +77,7 @@ class Config:
     enable_rate_limit: bool = True
     rate_limits: Mapping[str, str | RateLimit] = field(default_factory=dict)
     user_agent: str | None = None
+    token_store: TokenStore | None = field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "rate_limits", _normalize_rate_limits(self.rate_limits))
