@@ -114,8 +114,12 @@ jobs:
         with:
           name: ts-dist
           path: dist/
-      - name: Publish to npm
-        run: npm publish dist/*.tgz --provenance --access public
+      - name: Use the newest npm (staged publishing needs npm >= 11.15)
+        run: npm install -g npm@latest
+      - name: Stage on npm
+        # The trusted publisher may only stage: a maintainer makes the version live on
+        # npmjs.com (or `npm stage approve <id>`) with 2FA, so CI alone can't release.
+        run: npm stage publish dist/*.tgz --provenance --access public
       - name: Attach the package to the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
