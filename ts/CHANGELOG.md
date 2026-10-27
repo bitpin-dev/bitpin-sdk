@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/bitpin-dev/bitpin-sdk/compare/ts-v0.1.1...ts-v0.1.2) (2026-10-27)
+
+
+### Bug fixes
+
+* **ts:** export package.json ([28f3911](https://github.com/bitpin-dev/bitpin-sdk/commit/28f3911680a4067c0281736d575aad66f030b20e))
+
+
+### Dependencies
+
+* **ts:** request provenance only from the release workflow ([958787a](https://github.com/bitpin-dev/bitpin-sdk/commit/958787a46af86114684804981ae322306414f1b2))
+
 ## [0.1.1](https://github.com/bitpin-dev/bitpin-sdk/compare/ts-v0.1.0...ts-v0.1.1) (2026-10-27)
 
 
