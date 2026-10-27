@@ -1,0 +1,645 @@
+# Bitpin SDK
+
+> Official SDK for the Bitpin crypto exchange API (Iran; markets quoted in IRT/Toman and USDT). Python package `bitpin-sdk` (import `bitpin_sdk`), sync `Bitpin` and async `AsyncBitpin` with identical methods. ccxt method names and result structures; every number is `decimal.Decimal`; every result keeps the raw response in `info`. There is no sandbox: every call is real.
+
+Install: `pip install bitpin-sdk` (WebSocket: `pip install "bitpin-sdk[ws]"`). Python 3.10+.
+
+Construct: `Bitpin({"apiKey": KEY, "secret": SECRET})`, `Bitpin(Config.from_env())` (BITPIN_API_KEY, BITPIN_SECRET_KEY), or `Config(api_key=..., secret_key=..., rate_limits={"orderbook": "10800/min"})`. Use as a context manager or call `close()`. Symbols: `"BTC/IRT"` (also `"BTC_IRT"`).
+
+Rules an agent must follow:
+- Never retry create_order, create_orders, cancel, withdraw or OTP calls blindly; on NetworkError look the order up by `clientOrderId` first.
+- Set `params={"clientOrderId": ...}` on every order a bot places.
+- Round prices and amounts to `market["precision"]["price"]` / `["amount"]` (Decimal tick sizes) from `load_markets()`.
+- Default to dry-run in generated bots; require an explicit `--live` flag to send orders.
+- Never print, log or commit API keys.
+- Check `client.has[name]` before using optional features; missing ones raise `errors.NotSupported`.
+
+## Methods
+
+- Markets: `load_markets(reload=False)`, `market(symbol)`, `fetch_markets()`, `fetch_currencies()`, `fetch_networks(params)`, `fetch_market_suspensions()`, `describe()`
+- Prices: `fetch_ticker(symbol)`, `fetch_tickers(symbols=None)`, `fetch_order_book(symbol, limit<=50)`, `fetch_trades(symbol, since, limit)`, `fetch_ohlcv(symbol, timeframe="30m", since=None, limit=None)` (timeframes 1m 5m 15m 30m 1h 3h 4h 6h 1d 1w 1M; ≤10000 per call)
+- Fees: `fetch_trading_fees()`, `fetch_trading_fee(symbol)` (ratios, 0.003 = 0.3 %)
+- Orders: `create_order(symbol, type, side, amount, price, params)` with type limit | market | stop_limit | oco and params `clientOrderId`, `quoteAmount` (market by quote), `stopPrice`, `takeProfitPrice` (oco); `create_orders([...])` (≤10, atomic); `fetch_order(id)`; `fetch_orders(symbol, since, limit, params)`; `fetch_open_orders(...)`; `fetch_closed_orders(...)` (last 7 days); `fetch_order_history(symbol, since, until, limit, params)` (older, ≤90-day range); `cancel_order(id)`; `cancel_order_by_identifier(client_order_id)`; `cancel_orders(ids=[...] | identifiers=[...])` (≤10); `fetch_my_trades(symbol, since, limit)` (last 24 h only)
+- Wallet: `fetch_balance(params)` → `{"BTC": {"free","used","total"}, "free": {...}, ...}`; `fetch_bank_accounts()`; `fetch_deposit_address(code, network)`; `fetch_currency_networks(code)`; `fetch_deposits(code, since, limit)`; `fetch_withdrawals(code, since, limit)`; `withdraw(code, amount, address, tag, params={"network": ...})` (or `{"accountNumber": id}` for IRT, `{"alternativeAddress": phone_or_email}` for internal) then `verify_withdraw_otp(id, otp, second=False)`, `resend_withdraw_otp(id, first=True, voice_call=False)`
+- WebSocket (AsyncBitpin only; each call returns the next update): `watch_ticker(symbol)`, `watch_ohlcv(symbol, timeframe)`, `watch_order_book(symbol)`, `watch_trades(symbol)`, `watch_orders(symbol=None)`, `watch_my_trades(symbol=None)`
+- Low level: `request(endpoint_id, path_params, params=, body=)` and one implicit method per endpoint id, e.g. `public_get_mkt_tickers()`
+- Not offered by Bitpin yet (raise NotSupported): `cancel_all_orders`, `edit_order`, `fetch_accounts`, `fetch_ledger`, `transfer`, `fetch_deposit_withdraw_fees`, `fetch_positions`, `set_leverage`, `create_deposit_address`, `watch_balance`, `watch_tickers`, `set_sandbox_mode`
+
+Order status: Bitpin initial/active → "open"; closed and fully filled → "closed"; closed otherwise → "canceled". Errors (bitpin_sdk.errors): AuthenticationError, PermissionDenied, InsufficientFunds, InvalidOrder, OrderNotFound, BadRequest, BadSymbol, InvalidOTP, NotSupported, NetworkError, RateLimitExceeded(.retry_after), RequestTimeout, ExchangeNotAvailable.
+
+## Docs
+
+- [Quickstart](https://bitpin-dev.github.io/bitpin-sdk/quickstart/)
+- [Rate limits](https://bitpin-dev.github.io/bitpin-sdk/rate-limits/): server defaults per bucket and how to override them
+- [Trading](https://bitpin-dev.github.io/bitpin-sdk/trading/)
+- [Errors](https://bitpin-dev.github.io/bitpin-sdk/errors/)
+- [Full reference in one file](https://raw.githubusercontent.com/bitpin-dev/bitpin-sdk/main/llms-full.txt)
+- [Examples](https://github.com/bitpin-dev/bitpin-sdk/tree/main/examples/python), including a market-maker skeleton
+- [Agent skill for writing Bitpin bots](https://github.com/bitpin-dev/bitpin-sdk/blob/main/.ai/project/skills/bitpin-trading-bot/SKILL.md)
+
+
+# Bitpin SDK
+
+The official SDK for the [Bitpin](https://bitpin.ir) exchange API. It is built for market makers, VIP traders and the AI agents that write their bots.
+
+- **Python, sync and async.** `Bitpin` and `AsyncBitpin` have the same methods. Go and TypeScript are planned.
+- **ccxt-shaped.** Method names and result structures follow [ccxt](https://github.com/ccxt/ccxt), so a ccxt bot ports with small changes. See [Migrating from ccxt](migrating-from-ccxt.md).
+- **Exact numbers.** Prices and amounts are `decimal.Decimal`; nothing passes through float.
+- **Safe defaults.** Tokens are cached and refreshed automatically, the client stays under Bitpin's rate limits, and only idempotent requests are retried. Orders and withdrawals are never retried.
+- **Honest about gaps.** Features Bitpin doesn't offer yet raise `NotSupported` with a clear message. See [Not available yet](not-supported.md).
+
+```bash
+pip install bitpin-sdk          # REST
+pip install "bitpin-sdk[ws]"    # + WebSocket streams
+```
+
+```python
+from bitpin_sdk import Bitpin
+
+with Bitpin({"apiKey": "...", "secret": "..."}) as client:
+    print(client.fetch_ticker("BTC/IRT")["last"])
+    order = client.create_order("USDT/IRT", "limit", "buy", "10", "90000")
+    client.cancel_order(order["id"])
+```
+
+Next: [Quickstart](quickstart.md).
+
+!!! warning "No sandbox"
+    Bitpin has no testnet. Every call reaches the real exchange with real money. The examples print what they would send unless you pass `--live`.
+
+---
+
+# Quickstart
+
+## 1. Create an API key
+
+In the Bitpin website or app, open the API section and create a key pair. Bitpin shows the **secret key once**; store it in a secrets manager. Each key is bound to a list of allowed IPs, so add the IP of the server that runs your bot.
+
+## 2. Install
+
+```bash
+pip install bitpin-sdk            # Python 3.10+
+pip install "bitpin-sdk[ws]"      # if you need WebSocket streams
+```
+
+## 3. Public data (no key needed)
+
+```python
+from bitpin_sdk import Bitpin
+
+with Bitpin() as client:
+    markets = client.load_markets()             # {"BTC/IRT": Market, ...}
+    ticker = client.fetch_ticker("BTC/IRT")
+    book = client.fetch_order_book("BTC/IRT", limit=20)
+    candles = client.fetch_ohlcv("BTC/IRT", "1h", limit=100)
+```
+
+## 4. Your account
+
+Pass the key in code, a TOML file or environment variables (see [Configuration](configuration.md)):
+
+```python
+from bitpin_sdk import Bitpin, Config
+
+client = Bitpin(Config.from_env())   # BITPIN_API_KEY, BITPIN_SECRET_KEY
+balance = client.fetch_balance()
+print(balance["IRT"])                # {"free": Decimal(...), "used": ..., "total": ...}
+```
+
+## 5. Trade
+
+```python
+order = client.create_order("USDT/IRT", "limit", "buy", "10", "90000",
+                            {"clientOrderId": "my-bot-1"})
+client.fetch_order(order["id"])
+client.cancel_order_by_identifier("my-bot-1")
+```
+
+## 6. Async
+
+```python
+import asyncio
+from bitpin_sdk import AsyncBitpin, Config
+
+async def main() -> None:
+    async with AsyncBitpin(Config.from_env()) as client:
+        ticker, book = await asyncio.gather(
+            client.fetch_ticker("BTC/IRT"), client.fetch_order_book("BTC/IRT"))
+        update = await client.watch_order_book("BTC/IRT")   # WebSocket
+
+asyncio.run(main())
+```
+
+More: [Market data](market-data.md), [Trading](trading.md), [Wallet](wallet.md), [WebSocket](websocket.md), and the runnable [examples](https://github.com/bitpin-dev/bitpin-sdk/tree/main/examples/python).
+
+---
+
+# Authentication
+
+You never handle tokens yourself. The client does this on the first private call:
+
+1. `POST /api/v1/usr/authenticate/` with your `api_key` and `secret_key` returns an **access** token (about 15 minutes) and a **refresh** token (about 30 days).
+2. Every private request sends `Authorization: Bearer <access>`.
+3. About two minutes before the access token expires, the client calls `POST /api/v1/usr/refresh_token/` for a new one.
+4. If the refresh fails or the refresh token has expired, the client authenticates again.
+5. If the server answers 401 (for example, a revoked token), the client refreshes once and retries the request once.
+
+Only one authenticate or refresh runs at a time, even with many concurrent `AsyncBitpin` calls.
+
+## The 3-per-minute limit
+
+Authenticate allows **3 requests per minute per IP**. A bot that restarts often, or several bots on one host, can hit it. Share tokens with a file cache:
+
+```python
+from bitpin_sdk import Bitpin, Config, FileTokenStore
+
+client = Bitpin(Config.from_env(token_store=FileTokenStore()))
+```
+
+`FileTokenStore` writes `~/.cache/bitpin-sdk/<id>.json` with mode 0600. The id is a hash of your API key, never the key itself. For several hosts, implement the `TokenStore` protocol (`load`, `save`, `clear`) on top of Redis or similar.
+
+## IP allow-list
+
+Keys and the tokens they issue only work from the IPs you allowed for the key. A wrong IP returns `AuthenticationError`.
+
+## Errors
+
+| Problem | Exception |
+|---|---|
+| Wrong key or secret, IP not allowed | `AuthenticationError` |
+| No key configured but a private method called | `AuthenticationError` |
+| Account not allowed (for example, KYC level) | `PermissionDenied` |
+
+Secrets and tokens never appear in `repr()`, logs or exception messages.
+
+---
+
+# Configuration
+
+Every setting has a default from Bitpin's server, and you can override any of it.
+
+```python
+from bitpin_sdk import Bitpin, Config, RateLimit
+
+config = Config(
+    api_key="...",
+    secret_key="...",
+    timeout=10,               # seconds per request
+    max_retries=3,            # for idempotent requests only
+    enable_rate_limit=True,   # client-side limiter
+    rate_limits={"orderbook": "10800/min", "order_create": RateLimit(180_000, "hour")},
+    rest_url="https://api.bitpin.org",
+    ws_url="wss://centrifugo.bitpin.org/connection/websocket",
+    user_agent=None,          # default: bitpin-sdk-python/<version>
+    token_store=None,         # default: in memory; see Authentication
+)
+client = Bitpin(config)
+```
+
+## Four ways to build a config
+
+```python
+Config(api_key="...", secret_key="...")                     # in code
+Config.from_env(timeout=5)                                  # BITPIN_API_KEY, BITPIN_SECRET_KEY
+Config.from_file("bitpin.toml")                             # TOML, see below
+Bitpin({"apiKey": "...", "secret": "...", "timeout": 5000}) # ccxt-style dict (timeout in ms)
+```
+
+`bitpin.toml`:
+
+```toml
+[bitpin]
+api_key = "..."
+secret_key = "..."
+timeout = 10
+
+[bitpin.rate_limits]
+orderbook = "10800/min"
+fills = "600/min"
+```
+
+Unknown keys and unknown rate-limit bucket names raise `ValueError`, so a typo can't silently do nothing.
+
+`client.describe()` shows the effective URLs, capabilities, timeframes and rate limits.
+
+---
+
+# Rate limits
+
+Bitpin limits each endpoint group separately: per user when you send a token, per IP otherwise. The client keeps a sliding window per bucket and waits before a request that would exceed it, so a well-behaved bot doesn't get 429s.
+
+## Defaults
+
+These are the server's default limits. VIP and market-maker accounts often have higher ones. Ask Bitpin for your real limits and set them with `Config(rate_limits=...)` (see [Configuration](configuration.md)).
+
+| Bucket | Default | Used by |
+|---|---|---|
+| `auth` | 3 / min | authenticate (per IP) |
+| `refresh` | 20 / min | token refresh |
+| `ws_info` | 10 / min | WebSocket token |
+| `market_public` | 200 / min | `fetch_markets`, `fetch_currencies`, `fetch_networks` |
+| `market_suspensions` | 2 / min | `fetch_market_suspensions` |
+| `tickers` | 300 / min | `fetch_tickers`, `fetch_ticker` |
+| `commissions` | 10,000 / day | `fetch_trading_fees`, `fetch_trading_fee` |
+| `candles` | 300 / min | `fetch_ohlcv` |
+| `orderbook` | 60 / min | `fetch_order_book` |
+| `matches` | 60 / min | `fetch_trades` |
+| `order_create` | 18,000 / hour | `create_order` |
+| `order_read` | 18,000 / hour | `fetch_orders`, `fetch_order`, open/closed orders |
+| `order_cancel` | 18,000 / hour | `cancel_order`, `cancel_order_by_identifier` |
+| `order_bulk_create` | 1,800 / hour | `create_orders` |
+| `order_bulk_cancel` | 1,800 / hour | `cancel_orders`, and also `create_orders` |
+| `fills` | 300 / min | `fetch_my_trades` |
+| `order_history` | 5 / sec | `fetch_order_history` |
+| `wallet` | 60 / min | `fetch_balance`, `fetch_bank_accounts` |
+| `deposit_address` | 60 / min | `fetch_deposit_address` |
+| `currency_networks` | 60 / min | `fetch_currency_networks` |
+| `deposits` | 60 / min | `fetch_deposits` |
+| `withdraws` | 60 / min | `fetch_withdrawals`, `withdraw` |
+| `withdraw_otp` | 10,000 / day | `verify_withdraw_otp`, `resend_withdraw_otp` |
+
+Bitpin counts a bulk create against the bulk-cancel budget too, and so does the client.
+
+## When the server says 429
+
+The client raises `RateLimitExceeded` with `retry_after` (seconds) when the server gives a hint. An idempotent request (any GET) whose `retry_after` is 5 seconds or less is retried after waiting. Order creation and withdrawals are never retried.
+
+```python
+from bitpin_sdk import errors
+
+try:
+    client.fetch_order_book("BTC/IRT")
+except errors.RateLimitExceeded as exc:
+    print("try again in", exc.retry_after, "seconds")
+```
+
+## Several processes
+
+The limiter counts per client object. Several processes that use the same key share one server budget, so give each a share, for example `rate_limits={"order_create": "6000/hour"}` for three processes.
+
+Set `enable_rate_limit=False` to turn the client-side limiter off. The server still enforces its limits.
+
+---
+
+# Market data
+
+Public methods need no API key. Symbols are written `BTC/IRT`; `BTC_IRT` and lower case also work.
+
+| Method | Returns |
+|---|---|
+| `load_markets(reload=False)` | `{symbol: Market}`, cached on the client |
+| `market(symbol)` | one cached `Market` (call `load_markets()` first) |
+| `fetch_markets()` | `[Market]` with `precision` (tick sizes) and `active` |
+| `fetch_currencies()` | `{code: Currency}` |
+| `fetch_networks(params)` | every network; filters `code`, `can_deposit`, `can_withdraw` |
+| `fetch_tickers(symbols=None)` | `{symbol: Ticker}` |
+| `fetch_ticker(symbol)` | `Ticker`: `last`, `high`, `low`, `percentage` (24h, in %) |
+| `fetch_order_book(symbol, limit=None)` | `{"bids": [[price, amount]], "asks": ...}`; 20 levels by default, at most 50 |
+| `fetch_trades(symbol, since=None, limit=None)` | recent public trades, oldest first |
+| `fetch_ohlcv(symbol, timeframe="30m", since=None, limit=None)` | `[[ms, open, high, low, close, volume]]` |
+| `fetch_trading_fees()` / `fetch_trading_fee(symbol)` | your maker/taker fees as ratios (`0.003` = 0.3 %); needs a key |
+| `fetch_market_suspensions()` | `{symbol: suspended}` for your account; needs a key, 2 per minute |
+| `describe()` | capabilities, timeframes, URLs and effective rate limits |
+| `request(endpoint_id, path_params, params=, body=)` | low-level call to any endpoint |
+
+## Candles
+
+Timeframes: `1m 5m 15m 30m 1h 3h 4h 6h 1d 1w 1M` (`1m` is a minute, `1M` a month). Without `since` you get the latest `limit` candles (500 by default). One request returns at most 10,000 candles. An unknown timeframe raises `BadRequest`; the server would silently use `30m`.
+
+## Precision
+
+`market["precision"]["price"]` and `["amount"]` are tick sizes as `Decimal`, for example `Decimal("1")` for IRT prices and `Decimal("1E-8")` for BTC amounts. Round your prices to them before you place orders.
+
+## Implicit API
+
+Every endpoint is also a method named after its id in the spec, taking one dict (path parameters are picked out by name):
+
+```python
+client.public_get_mth_orderbook_symbol({"symbol": "BTC_IRT", "limit": 50})
+client.private_get_odr_orders({"state": "active"})
+```
+
+These return the raw JSON. Prefer the unified methods; use these for fields the unified ones don't expose.
+
+---
+
+# Trading
+
+All trading methods need an API key.
+
+## Place orders
+
+```python
+client.create_order(symbol, type, side, amount=None, price=None, params=None)
+```
+
+| `type` | Needs |
+|---|---|
+| `limit` | `amount`, `price` |
+| `market` | `amount` (base) **or** `params={"quoteAmount": ...}`, not both |
+| `stop_limit` | `amount`, `price` (the limit after the trigger), `params={"stopPrice": ...}` |
+| `oco` | `amount`, `price`, `params={"stopPrice": ..., "takeProfitPrice": ...}` |
+
+`params` also takes `clientOrderId` (your own id, up to you to keep unique). Unknown keys are sent as they are. The client validates the order before sending, so a missing price raises `InvalidOrder` without using your rate limit.
+
+```python
+order = client.create_order("BTC/IRT", "limit", "buy", "0.001", "3100000000",
+                            {"clientOrderId": "grid-7"})
+order["status"]   # "open"
+```
+
+`create_orders(orders)` places up to **10** orders in one atomic request (all or none):
+
+```python
+client.create_orders([
+    {"symbol": "USDT/IRT", "type": "limit", "side": "buy", "amount": "10", "price": "90000"},
+    {"symbol": "USDT/IRT", "type": "limit", "side": "sell", "amount": "10", "price": "91000"},
+])
+```
+
+## Order status
+
+| Bitpin `state` | ccxt `status` |
+|---|---|
+| `initial`, `active` | `open` |
+| `closed`, fully filled | `closed` |
+| `closed`, not fully filled | `canceled` |
+
+`filled`, `remaining`, `cost` (quote filled) and `average` are computed from Bitpin's fields. The raw order is in `info`.
+
+## Read orders
+
+| Method | What |
+|---|---|
+| `fetch_order(id)` | one order |
+| `fetch_orders(symbol, since, limit, params)` | active orders and orders closed in the last 7 days |
+| `fetch_open_orders(...)` | `initial` and `active` only |
+| `fetch_closed_orders(...)` | closed in the last 7 days |
+| `fetch_order_history(symbol, since, until, limit, params)` | older closed orders with at least one fill; range at most 90 days; updated with a short delay |
+
+`params` for `fetch_orders`: `side`, `type`, `state` (lists allowed), `identifier`, `ids_in`, `identifiers_in`. Pass `paginate=True` to read every page (`maxPages`, default 100). Pages use an id cursor, which the client handles for you.
+
+## Cancel
+
+| Method | |
+|---|---|
+| `cancel_order(id)` | by order id |
+| `cancel_order_by_identifier(client_order_id)` | by your `clientOrderId` |
+| `cancel_orders(ids=[...])` or `cancel_orders(identifiers=[...])` | up to 10; returns `{"canceled": [...], "not_canceled": [...]}` |
+
+A successful cancel means the engine accepted it; the order closes a moment later. Confirm with `fetch_order` or `watch_orders`. Cancelling a closed order raises `InvalidOrder`.
+
+## Your trades
+
+`fetch_my_trades(symbol=None, since=None, limit=None)` returns fills from the **last 24 hours** with `fee` (`cost`, `currency`). A `since` older than 24 hours raises `BadRequest`; use `fetch_order_history` instead.
+
+---
+
+# Wallet
+
+All wallet methods need an API key.
+
+## Balance
+
+```python
+balance = client.fetch_balance()                 # the "main" wallet
+balance["USDT"]   # {"free": Decimal, "used": Decimal, "total": Decimal}
+balance["free"]   # {"USDT": ..., "IRT": ...}
+client.fetch_balance({"service": "stake"})       # another wallet service
+```
+
+`free` is usable; `used` is frozen in open orders or pending withdrawals.
+
+## Deposits
+
+| Method | |
+|---|---|
+| `fetch_currency_networks(code)` | the networks of one currency, with `deposit` / `withdraw` availability |
+| `fetch_deposit_address(code, network)` | your address on that network, created on first use; `tag` is the memo, needed for XRP, XLM, EOS and similar |
+| `fetch_deposits(code=None, since=None, limit=None, params)` | `status`: `ok`, `failed` or `pending` |
+
+## Withdrawals
+
+A withdrawal is created first and sent only after you confirm it with OTP codes:
+
+```python
+w = client.withdraw("USDT", "50", "T...", params={"network": "TRX"})
+client.verify_withdraw_otp(w["id"], "123456")                  # authenticator app
+if not w["info"]["is_single_otp"]:
+    client.verify_withdraw_otp(w["id"], "654321", second=True) # code sent to you
+```
+
+| Kind | Call |
+|---|---|
+| Crypto | `withdraw(code, amount, address, tag=None, params={"network": "TRX"})` |
+| Toman (IRT) to your bank | `withdraw("IRT", amount, params={"accountNumber": id})`, with an `id` from `fetch_bank_accounts()` |
+| Instant, free transfer to another Bitpin user | `withdraw(code, amount, params={"alternativeAddress": phone_or_email})` |
+
+Destinations saved as trusted addresses on the Bitpin website need only the first OTP.
+
+| Method | |
+|---|---|
+| `fetch_withdrawals(code=None, since=None, limit=None, params)` | `status`: `ok`, `failed`, `canceled` or `pending` |
+| `fetch_bank_accounts()` | your bank accounts and their verification state |
+| `verify_withdraw_otp(id, otp, second=False)` | confirm; a wrong code raises `InvalidOTP` with `code` (`invalid_otp`, `otp1_already_verified`, `extra_try`) |
+| `resend_withdraw_otp(id, first=True, voice_call=False)` | send the code again |
+
+`extra_try` means too many wrong codes; Bitpin cancels the withdrawal. The SDK never retries a withdrawal and never automates OTP.
+
+---
+
+# WebSocket
+
+Streams use Bitpin's Centrifugo server and need the extra: `pip install "bitpin-sdk[ws]"`. They work with `AsyncBitpin` only. The sync `Bitpin` raises `NotSupported` for `watch_*`.
+
+Each `watch_*` call subscribes the first time, then returns the next update. Updates that arrive between calls are queued, so a loop doesn't miss any:
+
+```python
+async with AsyncBitpin(Config.from_env()) as client:
+    while True:
+        book = await client.watch_order_book("BTC/IRT")
+        print(book["bids"][0], book["asks"][0])
+```
+
+| Method | Channel | Returns |
+|---|---|---|
+| `watch_ticker(symbol)` | `market:<symbol>` | `Ticker` (24h stats) on every trade |
+| `watch_ohlcv(symbol, timeframe="1m")` | `market:<symbol>` | the latest candles of that timeframe (every 10 s and on trades) |
+| `watch_order_book(symbol)` | `orderbook:<symbol>` | `OrderBook` when the book changes |
+| `watch_trades(symbol)` | `matches:<symbol>` | `[Trade]`, new public trades |
+| `watch_orders(symbol=None)` | your private channel | `Order` when one of yours is created, filled or cancelled |
+| `watch_my_trades(symbol=None)` | your private channel | `Trade`, each of your fills |
+
+Private channels need a key. The client gets the connection token and your channel name from `POST /api/v1/usr/ws-info/` (10 per minute) and renews the token when the connection does.
+
+Recommended pattern: read the initial state over REST (`fetch_order_book`, `fetch_open_orders`), then apply WebSocket updates. Bitpin pushes only on change.
+
+One connection carries every channel. `await client.close()` closes it. For more control, use `bitpin_sdk.ws.BitpinWS(client, queue_size=1000)` directly.
+
+---
+
+# Errors
+
+Every exception derives from `bitpin_sdk.errors.BitpinError` and carries `status`, `body` (the parsed response) and `endpoint_id`. The classes follow ccxt, so existing `except` blocks keep working.
+
+```text
+BitpinError
+├── ExchangeError                 the server answered with an error
+│   ├── AuthenticationError       wrong key/secret, IP not allowed, token revoked
+│   ├── PermissionDenied          account not allowed (e.g. KYC level)
+│   ├── InsufficientFunds
+│   ├── InvalidOrder              rejected order or cancel
+│   ├── OrderNotFound
+│   ├── BadRequest                invalid parameters
+│   │   ├── BadSymbol
+│   │   └── InvalidOTP            .code: invalid_otp | otp1_already_verified | extra_try
+│   └── NotSupported              Bitpin doesn't offer this yet (.feature)
+└── NetworkError                  the request may not have reached the server
+    ├── RateLimitExceeded         .retry_after (seconds or None)
+    ├── RequestTimeout
+    └── ExchangeNotAvailable      5xx, maintenance
+```
+
+## What is retried
+
+| Request | Retried on `NetworkError`? |
+|---|---|
+| GET requests and the deposit address | yes: up to `max_retries` with 0.5 s, 1 s, 2 s… backoff; a 429 only if `retry_after` ≤ 5 s |
+| create order, bulk create, cancel, withdraw, OTP | **never** |
+
+When `create_order` raises a `NetworkError`, the order may or may not exist. Look it up by your `clientOrderId` before placing it again:
+
+```python
+try:
+    client.create_order("USDT/IRT", "limit", "buy", "10", "90000", {"clientOrderId": cid})
+except errors.NetworkError:
+    found = client.fetch_orders("USDT/IRT", params={"identifier": cid})
+```
+
+## How HTTP errors map
+
+| Server | Exception |
+|---|---|
+| 401, or 406 on authenticate | `AuthenticationError` |
+| 403 | `PermissionDenied` |
+| 404 on an order | `OrderNotFound` |
+| 406 `insufficent_balance` and similar | `InsufficientFunds` |
+| 406 `cancel_order_not_allowed` | `InvalidOrder` |
+| 400 on create order | `InvalidOrder` |
+| 400 with an OTP code | `InvalidOTP` |
+| other 400 / 404 | `BadRequest` |
+| 429 | `RateLimitExceeded` |
+| 5xx | `ExchangeNotAvailable` |
+
+The rules live in `spec/bitpin.yaml`, so every SDK language maps errors the same way.
+
+---
+
+# Not available yet
+
+These features exist in ccxt but Bitpin's public API doesn't offer them yet. The methods are there, `client.has[...]` is `False`, and calling one raises `NotSupported` with an English and a Persian message.
+
+| ccxt capability | Method | What to do instead |
+|---|---|---|
+| `cancelAllOrders` | `cancel_all_orders` | `cancel_orders()` with up to 10 ids at a time |
+| `editOrder` | `edit_order` | cancel, then place a new order |
+| `fetchAccounts` | `fetch_accounts` | not available |
+| `fetchLedger` | `fetch_ledger` | `fetch_deposits()`, `fetch_withdrawals()`, `fetch_my_trades()` |
+| `transfer` | `transfer` | not available (between wallet services) |
+| `fetchDepositWithdrawFees` | `fetch_deposit_withdraw_fees` | a withdrawal's fee is in its result |
+| `fetchPositions` | `fetch_positions` | margin isn't offered on the public API |
+| `setLeverage` | `set_leverage` | margin isn't offered on the public API |
+| `createDepositAddress` | `create_deposit_address` | `fetch_deposit_address()` creates it on first use |
+| `watchBalance` | `watch_balance` | poll `fetch_balance()` |
+| `watchTickers` | `watch_tickers` | `watch_ticker()` per symbol, or `fetch_tickers()` |
+| `sandbox` | `set_sandbox_mode` | there is no testnet; the examples run as dry-run |
+
+Also missing from the public API: minimum order sizes and price steps beyond `market["precision"]`, API-key management, OTC and convert.
+
+```python
+if client.has["editOrder"]:
+    ...
+```
+
+---
+
+# Migrating from ccxt
+
+The SDK uses ccxt's method names, arguments and result structures. A ccxt bot usually needs three changes.
+
+## 1. The import and constructor
+
+```python
+# ccxt
+import ccxt
+exchange = ccxt.someexchange({"apiKey": key, "secret": secret, "enableRateLimit": True})
+
+# Bitpin SDK
+from bitpin_sdk import Bitpin
+exchange = Bitpin({"apiKey": key, "secret": secret, "enableRateLimit": True})
+```
+
+Async: `ccxt.async_support` → `from bitpin_sdk import AsyncBitpin`. ccxt.pro `watch_*` → the same methods on `AsyncBitpin`.
+
+## 2. Numbers are Decimal
+
+Every price, amount and fee is a `decimal.Decimal`, so float arithmetic needs a change:
+
+```python
+spread = ticker["last"] * 0.001            # TypeError: Decimal * float
+spread = ticker["last"] * Decimal("0.001") # ok
+```
+
+Inputs accept `Decimal`, `str`, `int` or `float`.
+
+## 3. Bitpin-specific parameters
+
+| ccxt | Bitpin SDK |
+|---|---|
+| `params={"stopPrice": x}` | same (`triggerPrice` also works) |
+| OCO take-profit | `params={"takeProfitPrice": x}` |
+| market buy by cost | `params={"quoteAmount": x}` (`cost` also works) |
+| `fetch_deposit_address(code, {"network": n})` | same, or `fetch_deposit_address(code, n)` |
+| `cancel_orders(ids)` | `cancel_orders(ids=[...])` or `cancel_orders(identifiers=[...])` |
+
+Methods only Bitpin has: `cancel_order_by_identifier`, `fetch_order_history`, `fetch_market_suspensions`, `fetch_bank_accounts`, `fetch_currency_networks`, `fetch_networks`, `verify_withdraw_otp`, `resend_withdraw_otp`.
+
+## What behaves differently
+
+- `fetch_my_trades` covers only the last 24 hours. Older fills: `fetch_order_history`.
+- `fetch_orders` covers active orders and orders closed in the last 7 days.
+- `cancel_order` returns `{"id", "clientOrderId", "info"}`, not a full order; the order closes a moment later.
+- `withdraw` creates a withdrawal that must be confirmed with OTP.
+- Trading fees are ratios as in ccxt (`0.003`), converted from Bitpin's percents.
+- Some ccxt features don't exist on Bitpin: see [Not available yet](not-supported.md).
+
+---
+
+# FAQ
+
+**Is there a testnet?**
+No. Every call reaches the real exchange. Start with read-only calls and the examples' dry-run mode.
+
+**I get `AuthenticationError` right away.**
+Check that the server's public IP is on the key's allow-list, and that you didn't swap key and secret. Authenticate is limited to 3 per minute per IP; share tokens with `FileTokenStore` if you restart often.
+
+**My VIP account has higher limits. Does the SDK know?**
+No. The server doesn't publish them. Set them with `Config(rate_limits={...})`; see [Rate limits](rate-limits.md).
+
+**Why are numbers `Decimal`?**
+Float rounding breaks prices like `0.1 + 0.2`. Market makers need exact values.
+
+**Can I use the sync client with WebSocket?**
+No. `watch_*` needs `AsyncBitpin`. You can use `Bitpin` for REST and run a separate async task for streams.
+
+**An order timed out. Was it placed?**
+Maybe. Orders are never retried automatically. Look it up by `clientOrderId` (see [Errors](errors.md)).
+
+**Where are the raw fields?**
+Every result has `info` with the server's response. Every endpoint is also callable directly, for example `client.private_get_odr_orders({...})`.
+
+**How do I report a bug or a security problem?**
+Bugs: GitHub issues. Security problems: privately, as described in [SECURITY.md](https://github.com/bitpin-dev/bitpin-sdk/blob/main/SECURITY.md).
+
+**What's the full method list?**
+`describe()` in code, or the reference pages: [Market data](market-data.md), [Trading](trading.md), [Wallet](wallet.md), [WebSocket](websocket.md). Close the client with `close()` or use it as a context manager.
