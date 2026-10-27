@@ -8,7 +8,7 @@
     { "type": "fix", "section": "Bug fixes" },
     { "type": "perf", "section": "Performance" },
     { "type": "docs", "section": "Documentation" },
-    { "type": "deps", "section": "Dependencies" },
+    { "type": "build", "section": "Dependencies" },
     { "type": "refactor", "section": "Refactoring", "hidden": true },
     { "type": "test", "section": "Tests", "hidden": true },
     { "type": "ci", "section": "CI", "hidden": true },
