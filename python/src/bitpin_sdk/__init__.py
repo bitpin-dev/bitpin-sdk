@@ -5,7 +5,7 @@
 See https://bitpin-dev.github.io/bitpin-sdk/ for the full documentation.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.0"  # x-release-please-version
 
 from bitpin_sdk import errors
 from bitpin_sdk._async.client import AsyncBitpin

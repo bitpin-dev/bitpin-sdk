@@ -1,0 +1,21 @@
+# pip install pre-commit && pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: bash -c 'cd python && uv run ruff check --fix src tests ../examples && uv run ruff format src tests ../examples'
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: generated
+        name: generated files are fresh
+        entry: bash -c 'cd python && uv run python ../scripts/gen_python.py --check && uv run python ../scripts/gen_sync.py --check && uv run python ../scripts/gen_llms_full.py --check'
+        language: system
+        pass_filenames: false
+      - id: docs
+        name: docs in both languages
+        entry: bash -c 'cd python && uv run python ../scripts/check_docs.py'
+        language: system
+        pass_filenames: false
+        files: ^(docs/|README|llms\.txt|python/src/)
