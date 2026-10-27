@@ -68,7 +68,8 @@
           "type": "generic",
           "path": "src/version.ts"
         }
-      ]
+      ],
+      "initial-version": "0.1.0"
     },
     "go": {
       "release-type": "go",
@@ -81,7 +82,8 @@
           "type": "generic",
           "path": "doc.go"
         }
-      ]
+      ],
+      "initial-version": "0.1.0"
     }
   }
 }
