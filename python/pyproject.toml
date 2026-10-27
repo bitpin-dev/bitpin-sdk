@@ -98,3 +98,6 @@ files = ["src"]
 [[tool.mypy.overrides]]
 module = ["tomli", "centrifuge", "centrifuge.*", "respx"]
 ignore_missing_imports = true
+
+[tool.hatch.build.targets.sdist]
+exclude = [".hypothesis", ".venv", "dist"]

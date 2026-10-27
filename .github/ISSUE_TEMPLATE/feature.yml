@@ -1,0 +1,11 @@
+name: Feature request
+description: An endpoint, method or language you need
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes: { label: What you want to do, description: "The trading task, not just the method name" }
+    validations: { required: true }
+  - type: input
+    id: ccxt
+    attributes: { label: Equivalent ccxt method, if any }

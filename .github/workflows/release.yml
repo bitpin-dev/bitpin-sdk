@@ -1,0 +1,70 @@
+name: Release
+
+# release-please keeps one release PR per language. Merging it tags the version
+# (python-vX.Y.Z), creates the GitHub Release with notes from the changelog, and
+# publishes that language's package.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      python-released: ${{ steps.release.outputs['python--release_created'] }}
+      python-tag: ${{ steps.release.outputs['python--tag_name'] }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build-python:
+    needs: release-please
+    if: needs.release-please.outputs.python-released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release-please.outputs.python-tag }}
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+      - working-directory: python
+        run: |
+          uv sync --locked
+          uv run pytest -q
+          uv build
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: python-dist
+          path: python/dist/
+
+  publish-python:
+    needs: [release-please, build-python]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/bitpin-sdk/
+    permissions:
+      id-token: write  # PyPI trusted publishing; no API token is stored
+      contents: write  # attach the built files to the GitHub Release
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python-dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+      - name: Attach files to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.python-tag }}
+        run: gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY"

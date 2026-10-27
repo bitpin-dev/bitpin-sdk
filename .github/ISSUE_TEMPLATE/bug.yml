@@ -1,0 +1,20 @@
+name: Bug report
+description: Something in the SDK behaves wrongly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Never paste API keys, secret keys or tokens. Security problems go to the Security tab, not here.
+        کلید API یا توکن را اینجا نگذارید. مشکلات امنیتی را از تب Security گزارش کنید.
+  - type: input
+    id: version
+    attributes: { label: SDK version and language, placeholder: "python 0.1.0" }
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes: { label: What happened, description: "The call you made, what you expected, what you got (error text, with secrets removed)" }
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes: { label: Minimal code to reproduce, render: python }
