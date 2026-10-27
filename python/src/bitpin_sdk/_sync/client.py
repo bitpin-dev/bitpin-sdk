@@ -193,10 +193,9 @@ class Bitpin:
 
     def _send(self, req: Request, token: str | None) -> Any:
         if self.config.enable_rate_limit:
-            wait = self._limiter.delay(req.buckets)
+            wait = self._limiter.reserve(req.buckets)
             if wait > 0:
                 self._sleep(wait)
-            self._limiter.record(req.buckets)
         headers = {
             "Accept": "application/json",
             "User-Agent": self.config.user_agent or f"bitpin-sdk-python/{__version__}",

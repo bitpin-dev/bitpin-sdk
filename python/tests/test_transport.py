@@ -350,3 +350,17 @@ def test_sync_context_manager_closes_owned_client(fake_time: FakeTime) -> None:
     Bitpin(http_client=external).close()
     assert not external.is_closed
     external.close()
+
+
+async def test_concurrent_burst_is_spread_not_fired_together(fake_time: FakeTime, mock: respx.MockRouter) -> None:
+    route(mock, "public_get_mth_orderbook_symbol")
+    sleeps: list[float] = []
+
+    async def sleep(seconds: float) -> None:  # yields without moving the clock
+        sleeps.append(seconds)
+        await asyncio.sleep(0)
+
+    client = AsyncBitpin({"rate_limits": {"orderbook": "2/sec"}}, clock=fake_time, sleep=sleep)
+    await asyncio.gather(*(client.fetch_order_book("BTC/IRT") for _ in range(8)))
+    assert sorted(sleeps) == [1.0, 1.0, 2.0, 2.0, 3.0, 3.0]
+    await client.close()
