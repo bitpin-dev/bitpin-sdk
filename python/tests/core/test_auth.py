@@ -118,3 +118,17 @@ def test_tokens_repr_hides_values() -> None:
     text = repr(Tokens("ACCESS-SECRET", "REFRESH-SECRET", 1.0, 2.0))
     assert "ACCESS-SECRET" not in text
     assert "REFRESH-SECRET" not in text
+
+
+def test_expire_access_forces_refresh() -> None:
+    clock = Clock()
+    state = TokenState(clock)
+    state.set_tokens(
+        {
+            "access": make_jwt({"exp": clock.now + 900}),
+            "refresh": make_jwt({"exp": clock.now + 86400}),
+        }
+    )
+    state.expire_access()
+    assert state.action() == "refresh"
+    TokenState(clock).expire_access()
