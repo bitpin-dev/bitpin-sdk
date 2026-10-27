@@ -41,9 +41,23 @@ def ts_methods() -> list[str]:
     body = source[source.index("export class Bitpin") :]
     body = body[: body.index("\n}\n")]  # the class only
     names = re.findall(r"^  (?:async )?([a-z][A-Za-z]+)\(", body, re.MULTILINE)
-    return sorted(set(names) - {"constructor", "implicit", "retryDelay", "send", "credentials",
-                                "withAuthLock", "accessToken", "paged", "allPages", "websocket",
-                                "toString", "toJSON"})
+    return sorted(
+        set(names)
+        - {
+            "constructor",
+            "implicit",
+            "retryDelay",
+            "send",
+            "credentials",
+            "withAuthLock",
+            "accessToken",
+            "paged",
+            "allPages",
+            "websocket",
+            "toString",
+            "toJSON",
+        }
+    )
 
 
 def go_methods() -> list[str]:
@@ -82,7 +96,9 @@ def check() -> list[str]:
         text = page.read_text(encoding="utf-8") if page.exists() else ""
         for method in ts_methods():
             if f"`{method}" not in text:
-                problems.append(f"docs/{lang}/typescript.md: TypeScript method {method} is not documented")
+                problems.append(
+                    f"docs/{lang}/typescript.md: TypeScript method {method} is not documented"
+                )
 
     for lang in ("en", "fa"):
         page = ROOT / "docs" / lang / "go.md"
@@ -95,8 +111,12 @@ def check() -> list[str]:
         page = ROOT / "docs" / lang / "rate-limits.md"
         text = page.read_text(encoding="utf-8") if page.exists() else ""
         for bucket, (limit, period) in RATE_LIMITS.items():
-            if not re.search(rf"`{bucket}`.*\|\s*{limit:,}\s*/\s*{period}\b".replace(",", r"[,٬]?"), text):
-                problems.append(f"docs/{lang}/rate-limits.md: bucket {bucket} ({limit}/{period}) missing")
+            if not re.search(
+                rf"`{bucket}`.*\|\s*{limit:,}\s*/\s*{period}\b".replace(",", r"[,٬]?"), text
+            ):
+                problems.append(
+                    f"docs/{lang}/rate-limits.md: bucket {bucket} ({limit}/{period}) missing"
+                )
         page = ROOT / "docs" / lang / "not-supported.md"
         text = page.read_text(encoding="utf-8") if page.exists() else ""
         for feature, ok in HAS.items():

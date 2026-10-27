@@ -6,7 +6,8 @@ A monorepo of hand-written SDKs for Bitpin's public API, one per language, all g
 
 ```
 spec/bitpin.yaml     single source of truth: endpoints, rate limits, constants, errors, has map
-fixtures/            one synthetic response per endpoint, replayed by every language's tests
+fixtures/            one synthetic response per endpoint, replayed by every language's tests;
+                     expected.json: what every language must parse them into (Python is the reference)
 python/src/bitpin_sdk/
   _generated/        from spec by scripts/gen_python.py        (generated)
   _core/             sans-I/O: requests, parsers, errors, auth state, limiter
