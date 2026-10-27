@@ -98,6 +98,7 @@ class AsyncBitpin:
         self._tokens = TokenState(clock)
         self._store: TokenStore = self.config.token_store or MemoryTokenStore()
         self._store_loaded = False
+        self._store_key: str | None = None
         self._auth_lock = Lock()
         self._ws_factory = ws_transport_factory
         self._ws: Any = None
@@ -255,7 +256,9 @@ class AsyncBitpin:
     async def _access_token(self) -> str:
         async with self._auth_lock:
             credentials = self._credentials()
-            store_key = key_id(credentials["api_key"])
+            if self._store_key is None:  # PBKDF2 is slow on purpose; derive it once
+                self._store_key = key_id(credentials["api_key"])
+            store_key = self._store_key
             if not self._store_loaded:
                 self._store_loaded = True
                 stored = self._store.load(store_key)

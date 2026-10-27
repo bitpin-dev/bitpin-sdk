@@ -76,3 +76,12 @@ def test_file_store_rejects_wrongly_typed_file(tmp_path: Path) -> None:
         '{"access": "a", "refresh": "r", "access_exp": "soon", "refresh_exp": 1}', encoding="utf-8"
     )
     assert FileTokenStore(tmp_path).load("abc") is None
+
+
+def test_key_id_uses_a_slow_key_derivation() -> None:
+    import hashlib
+
+    expected = hashlib.pbkdf2_hmac(
+        "sha256", b"MY-API-KEY", b"bitpin-sdk/token-store", 100_000
+    ).hex()[:16]
+    assert key_id("MY-API-KEY") == expected

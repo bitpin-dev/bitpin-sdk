@@ -53,8 +53,8 @@ def iso_to_ms(value: str | None) -> int | None:
         head, dot, rest = text.partition(".")
         if not dot:
             return None
-        digits = "".join(c for c in rest if c.isdigit())
-        offset = rest[len(digits) :]
+        width = len(rest) - len(rest.lstrip("0123456789"))
+        digits, offset = rest[:width], rest[width:]
         try:
             parsed = datetime.fromisoformat(f"{head}.{digits[:6].ljust(6, '0')}{offset}")
         except ValueError:
