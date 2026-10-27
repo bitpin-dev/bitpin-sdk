@@ -137,7 +137,12 @@ def test_expire_access_forces_refresh() -> None:
 def test_expire_access_ignores_a_stale_token() -> None:
     clock = Clock()
     state = TokenState(clock)
-    state.set_tokens({"access": make_jwt({"exp": clock.now + 900}), "refresh": make_jwt({"exp": clock.now + 86400})})
+    state.set_tokens(
+        {
+            "access": make_jwt({"exp": clock.now + 900}),
+            "refresh": make_jwt({"exp": clock.now + 86400}),
+        }
+    )
     old = state.access_token
     state.set_access({"access": make_jwt({"exp": clock.now + 1800})})
     state.expire_access(old)

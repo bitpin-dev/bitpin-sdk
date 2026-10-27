@@ -452,7 +452,7 @@ Destinations saved as trusted addresses on the Bitpin website need only the firs
 
 Streams use Bitpin's Centrifugo server and need the extra: `pip install "bitpin-sdk[ws]"`. They work with `AsyncBitpin` only. The sync `Bitpin` raises `NotSupported` for `watch_*`.
 
-Each `watch_*` call subscribes the first time, then returns the next update. Updates that arrive between calls are queued, so a loop doesn't miss any:
+Each `watch_*` call subscribes the first time, then returns the next update. Every distinct watch (method, symbol and timeframe) has its own queue of updates that arrive between calls, so a loop doesn't miss any, and one task per market works. Two tasks awaiting the same watch split its updates, so give each watch one consumer:
 
 ```python
 async with AsyncBitpin(Config.from_env()) as client:

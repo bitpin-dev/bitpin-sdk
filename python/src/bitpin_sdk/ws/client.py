@@ -1,8 +1,10 @@
 """``BitpinWS``: ccxt.pro-style ``watch_*`` methods over Centrifugo.
 
-Each ``watch_*`` call subscribes once (the first time) and returns the next update. Updates
-that arrive between calls are queued (``queue_size`` per channel and event, oldest dropped
-first), so a loop like ``while True: await ws.watch_trades(s)`` doesn't miss any.
+Each ``watch_*`` call subscribes once (the first time) and returns the next update. Every
+distinct watch (method + symbol + timeframe) has its own queue (``queue_size`` updates,
+oldest dropped first), so a loop like ``while True: await ws.watch_trades(s)`` doesn't miss
+any, and watchers of different symbols or timeframes on one channel all see their updates.
+Two tasks awaiting the *same* watch share its queue and split the updates between them.
 """
 
 from __future__ import annotations
@@ -40,7 +42,8 @@ class BitpinWS:
         self._transport: Transport | None = None
         self._lock = asyncio.Lock()
         self._channels: set[str] = set()
-        self._queues: dict[tuple[str, str], asyncio.Queue[Any]] = {}
+        self._queues: dict[tuple[str, str, str], asyncio.Queue[Any]] = {}
+        self._filters: dict[tuple[str, str, str], Callable[[Any], bool]] = {}
         self._user_identifier: str | None = None
 
     async def close(self) -> None:
@@ -69,27 +72,38 @@ class BitpinWS:
             await self._transport.connect()
         return self._transport
 
-    def _queue(self, channel: str, event: str) -> asyncio.Queue[Any]:
-        key = (channel, event)
-        if key not in self._queues:
-            self._queues[key] = asyncio.Queue(maxsize=self._queue_size)
-        return self._queues[key]
+    def _queue(
+        self, channel: str, event: str, key: str, accept: Callable[[Any], bool]
+    ) -> asyncio.Queue[Any]:
+        name = (channel, event, key)
+        if name not in self._queues:
+            self._queues[name] = asyncio.Queue(maxsize=self._queue_size)
+            self._filters[name] = accept
+        return self._queues[name]
 
     def _on_data(self, channel: str) -> Callable[[Any], None]:
         def handle(data: Any) -> None:
             event = data.get("event") if isinstance(data, dict) else None
             if event is None:
                 return
-            queue = self._queue(channel, str(event))
-            if queue.full():
-                queue.get_nowait()
-                logger.warning("dropped an old %s update on %s; read faster", event, channel)
-            queue.put_nowait(data)
+            for name, queue in self._queues.items():
+                if name[0] != channel or name[1] != event or not self._filters[name](data):
+                    continue
+                if queue.full():
+                    queue.get_nowait()
+                    logger.warning("dropped an old %s update on %s; read faster", event, channel)
+                queue.put_nowait(data)
 
         return handle
 
-    async def _next(self, channel: str, event: str) -> Any:
-        queue = self._queue(channel, event)
+    async def _next(
+        self,
+        channel: str,
+        event: str,
+        key: str = "",
+        accept: Callable[[Any], bool] = lambda _: True,
+    ) -> Any:
+        queue = self._queue(channel, event, key, accept)
         async with self._lock:
             if channel not in self._channels:
                 transport = await self._connection()
@@ -117,10 +131,12 @@ class BitpinWS:
         if timeframe not in TIMEFRAMES:
             raise errors.BadRequest(f"timeframe {timeframe!r} is not supported")
         channel = WS_CHANNELS["market"].format(symbol=to_market_id(symbol))
-        while True:
-            candles = parse.parse_ohlcv(await self._next(channel, "candle_update"), timeframe)
-            if candles:
-                return candles
+
+        def accept(data: Any) -> bool:
+            return any(c.get("resolution") == timeframe for c in data.get("candles", []))
+
+        data = await self._next(channel, "candle_update", timeframe, accept)
+        return parse.parse_ohlcv(data, timeframe)
 
     async def watch_order_book(self, symbol: str) -> OrderBook:
         channel = WS_CHANNELS["orderbook"].format(symbol=to_market_id(symbol))
@@ -136,16 +152,16 @@ class BitpinWS:
         """The next update of one of your orders (created, filled, cancelled)."""
         channel = await self._user_channel()
         wanted = to_market_id(symbol) if symbol else None
-        while True:
-            data = await self._next(channel, "user_order_update")
-            if wanted is None or data.get("symbol") == wanted:
-                return parse.parse_order(data)
+        data = await self._next(channel, "user_order_update", wanted or "*", _symbol_filter(wanted))
+        return parse.parse_order(data)
 
     async def watch_my_trades(self, symbol: str | None = None) -> Trade:
         """The next fill of one of your orders."""
         channel = await self._user_channel()
         wanted = to_market_id(symbol) if symbol else None
-        while True:
-            data = await self._next(channel, "user_match_update")
-            if wanted is None or data.get("symbol") == wanted:
-                return parse.parse_my_trade(data)
+        data = await self._next(channel, "user_match_update", wanted or "*", _symbol_filter(wanted))
+        return parse.parse_my_trade(data)
+
+
+def _symbol_filter(market_id: str | None) -> Callable[[Any], bool]:
+    return lambda data: market_id is None or data.get("symbol") == market_id
