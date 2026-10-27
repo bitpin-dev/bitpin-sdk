@@ -1,7 +1,7 @@
 /**
  * Official TypeScript SDK for the Bitpin exchange.
  *
- *     import { Bitpin } from "bitpin-sdk";
+ *     import { Bitpin } from "@bitpin-dev/bitpin-sdk";
  *
  * Docs: https://bitpin-dev.github.io/bitpin-sdk/typescript/
  */

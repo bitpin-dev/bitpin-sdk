@@ -1,15 +1,15 @@
-# bitpin-sdk (TypeScript)
+# @bitpin-dev/bitpin-sdk (TypeScript)
 
 The official TypeScript and JavaScript SDK for the [Bitpin](https://bitpin.ir) exchange API. It uses ccxt JS method names and result structures, `Decimal` numbers, and automatic token refresh. It also has client-side rate limiting with overridable VIP limits, and WebSocket streams.
 
 SDK رسمی تایپ‌اسکریپت برای API صرافی بیت‌پین. [مستندات فارسی](https://bitpin-dev.github.io/bitpin-sdk/fa/typescript/)
 
 ```bash
-npm install bitpin-sdk     # Node 22+
+npm install @bitpin-dev/bitpin-sdk     # Node 22+
 ```
 
 ```ts
-import { Bitpin } from "bitpin-sdk";
+import { Bitpin } from "@bitpin-dev/bitpin-sdk";
 
 const client = new Bitpin(); // reads BITPIN_API_KEY and BITPIN_SECRET_KEY
 console.log((await client.fetchTicker("BTC/IRT")).last?.toString());

@@ -103,9 +103,9 @@ jobs:
         run: |
           npm pack
           mkdir /tmp/clean && cd /tmp/clean && npm init -y >/dev/null
-          npm install "$GITHUB_WORKSPACE"/ts/bitpin-sdk-*.tgz
-          node --input-type=module -e "import { Bitpin, VERSION } from 'bitpin-sdk'; console.log(VERSION, typeof new Bitpin().fetchTicker)"
-          node -e "const { Bitpin } = require('bitpin-sdk'); console.log(typeof Bitpin)"
+          npm install "$GITHUB_WORKSPACE"/ts/*.tgz
+          node --input-type=module -e "import { Bitpin, VERSION } from '@bitpin-dev/bitpin-sdk'; console.log(VERSION, typeof new Bitpin().fetchTicker)"
+          node -e "const { Bitpin } = require('@bitpin-dev/bitpin-sdk'); console.log(typeof Bitpin)"
 
   go:
     name: Go (${{ matrix.go }})

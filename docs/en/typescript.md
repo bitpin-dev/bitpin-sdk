@@ -1,13 +1,13 @@
 # TypeScript
 
-`bitpin-sdk` on npm: the same SDK for TypeScript and JavaScript, with ccxt JS names and the same behaviour as the Python SDK. Node 22 or newer; Bun and Deno work too. It's meant for servers and bots: API secrets don't belong in a browser.
+`@bitpin-dev/bitpin-sdk` on npm (published by the `bitpin-dev` npm organization): the same SDK for TypeScript and JavaScript, with ccxt JS names and the same behaviour as the Python SDK. Node 22 or newer; Bun and Deno work too. It's meant for servers and bots: API secrets don't belong in a browser.
 
 ```bash
-npm install bitpin-sdk
+npm install @bitpin-dev/bitpin-sdk
 ```
 
 ```ts
-import { Bitpin, InsufficientFunds } from "bitpin-sdk";
+import { Bitpin, InsufficientFunds } from "@bitpin-dev/bitpin-sdk";
 
 const client = new Bitpin({ apiKey: process.env.BITPIN_API_KEY, secret: process.env.BITPIN_SECRET_KEY });
 const ticker = await client.fetchTicker("BTC/IRT");
@@ -32,7 +32,7 @@ Without options, `new Bitpin()` reads `BITPIN_API_KEY`, `BITPIN_SECRET_KEY` and 
 | Clients | `Bitpin` (sync) and `AsyncBitpin` | one `Bitpin`; every method returns a `Promise` |
 | Names | `fetch_order_book` | `fetchOrderBook` (ccxt JS) |
 | Implicit API | `client.public_get_mkt_tickers()` | `client.publicGetMktTickers()` |
-| Numbers | `decimal.Decimal` | `Decimal` from decimal.js, re-exported: `import { Decimal } from "bitpin-sdk"` |
+| Numbers | `decimal.Decimal` | `Decimal` from decimal.js, re-exported: `import { Decimal } from "@bitpin-dev/bitpin-sdk"` |
 | `timeout` | seconds | milliseconds, as in ccxt JS |
 | Bulk cancel | `cancel_orders(ids=[...])` | `cancelOrders({ ids: [...] })` or `{ identifiers: [...] }` |
 | Token store | `FileTokenStore()` | `new FileTokenStore()` (Node), async `TokenStore` interface |
@@ -70,7 +70,7 @@ const client = new Bitpin({
 The classes are the same as in Python and ccxt, and are exported both directly and as `errors`:
 
 ```ts
-import { errors, InsufficientFunds } from "bitpin-sdk";
+import { errors, InsufficientFunds } from "@bitpin-dev/bitpin-sdk";
 
 try {
   await client.createOrder("USDT/IRT", "limit", "buy", "10", "90000");

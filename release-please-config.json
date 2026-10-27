@@ -60,7 +60,7 @@
     },
     "ts": {
       "release-type": "node",
-      "package-name": "bitpin-sdk",
+      "package-name": "@bitpin-dev/bitpin-sdk",
       "component": "ts",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
