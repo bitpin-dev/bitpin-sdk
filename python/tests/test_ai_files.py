@@ -70,9 +70,7 @@ def test_claude_settings_deny_dangerous_actions() -> None:
 
 def test_no_internal_backend_references() -> None:
     """The repo is public: nothing may point into Bitpin's private backend code."""
-    pattern = re.compile(
-        r"bitpin/[a-z_]+/[a-z_]+\.py|gitlab\."
-    )
+    pattern = re.compile(r"bitpin/[a-z_]+/[a-z_]+\.py|gitlab\.")
     for path in ROOT.rglob("*"):
         if path.is_file() and path.suffix in {
             ".md",
