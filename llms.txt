@@ -29,7 +29,7 @@ Order status: Bitpin initial/active → "open"; closed and fully filled → "clo
 
 ## TypeScript
 
-npm `bitpin-sdk` (Node ≥ 22): one async class `Bitpin`, same behaviour, ccxt JS names (`fetchTicker`, `createOrder`, `cancelOrders({ ids })`, `watchOrderBook`), implicit methods in camelCase (`publicGetMktTickers`), `Decimal` from decimal.js (re-exported), `timeout` in milliseconds. `new Bitpin({ apiKey, secret })` or `new Bitpin()` to read BITPIN_API_KEY / BITPIN_SECRET_KEY. Errors are the same classes, exported directly (`InsufficientFunds`) and as `errors`. [TypeScript guide](https://bitpin-dev.github.io/bitpin-sdk/typescript/).
+npm `@bitpin-dev/bitpin-sdk` (Node ≥ 22): one async class `Bitpin`, same behaviour, ccxt JS names (`fetchTicker`, `createOrder`, `cancelOrders({ ids })`, `watchOrderBook`), implicit methods in camelCase (`publicGetMktTickers`), `Decimal` from decimal.js (re-exported), `timeout` in milliseconds. `new Bitpin({ apiKey, secret })` or `new Bitpin()` to read BITPIN_API_KEY / BITPIN_SECRET_KEY. Errors are the same classes, exported directly (`InsufficientFunds`) and as `errors`. [TypeScript guide](https://bitpin-dev.github.io/bitpin-sdk/typescript/).
 
 ## Go
 

@@ -17,7 +17,7 @@
     "declaration": true,
     "outDir": "dist",
     "paths": {
-      "bitpin-sdk": ["./src/index.ts"]
+      "@bitpin-dev/bitpin-sdk": ["./src/index.ts"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,

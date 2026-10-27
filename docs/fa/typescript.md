@@ -1,13 +1,13 @@
 # تایپ‌اسکریپت
 
-بستهٔ `bitpin-sdk` در npm: همان SDK برای تایپ‌اسکریپت و جاوااسکریپت، با نام‌های ccxt JS و همان رفتار SDK پایتون. به Node نسخهٔ ۲۲ یا بالاتر نیاز دارد؛ Bun و Deno هم کار می‌کنند. برای سرور و ربات ساخته شده است؛ کلید مخفی API نباید در مرورگر باشد.
+بستهٔ `@bitpin-dev/bitpin-sdk` در npm (منتشرشده توسط سازمان `bitpin-dev` در npm): همان SDK برای تایپ‌اسکریپت و جاوااسکریپت، با نام‌های ccxt JS و همان رفتار SDK پایتون. به Node نسخهٔ ۲۲ یا بالاتر نیاز دارد؛ Bun و Deno هم کار می‌کنند. برای سرور و ربات ساخته شده است؛ کلید مخفی API نباید در مرورگر باشد.
 
 ```bash
-npm install bitpin-sdk
+npm install @bitpin-dev/bitpin-sdk
 ```
 
 ```ts
-import { Bitpin, InsufficientFunds } from "bitpin-sdk";
+import { Bitpin, InsufficientFunds } from "@bitpin-dev/bitpin-sdk";
 
 const client = new Bitpin({ apiKey: process.env.BITPIN_API_KEY, secret: process.env.BITPIN_SECRET_KEY });
 const ticker = await client.fetchTicker("BTC/IRT");
@@ -32,7 +32,7 @@ await client.cancelOrderByIdentifier("bot-1");
 | کلاینت‌ها | `Bitpin` (همگام) و `AsyncBitpin` | یک `Bitpin`؛ همهٔ متدها `Promise` برمی‌گردانند |
 | نام‌ها | `fetch_order_book` | `fetchOrderBook` (مثل ccxt JS) |
 | API ضمنی | `client.public_get_mkt_tickers()` | `client.publicGetMktTickers()` |
-| اعداد | `decimal.Decimal` | `Decimal` از decimal.js که دوباره export شده است: `import { Decimal } from "bitpin-sdk"` |
+| اعداد | `decimal.Decimal` | `Decimal` از decimal.js که دوباره export شده است: `import { Decimal } from "@bitpin-dev/bitpin-sdk"` |
 | `timeout` | ثانیه | میلی‌ثانیه، مثل ccxt JS |
 | لغو گروهی | `cancel_orders(ids=[...])` | `cancelOrders({ ids: [...] })` یا `{ identifiers: [...] }` |
 | ذخیرهٔ توکن | `FileTokenStore()` | `new FileTokenStore()` (در Node)، رابط ناهمگام `TokenStore` |
@@ -70,7 +70,7 @@ const client = new Bitpin({
 کلاس‌ها همان کلاس‌های پایتون و ccxt هستند و هم مستقیم و هم زیر `errors` export شده‌اند:
 
 ```ts
-import { errors, InsufficientFunds } from "bitpin-sdk";
+import { errors, InsufficientFunds } from "@bitpin-dev/bitpin-sdk";
 
 try {
   await client.createOrder("USDT/IRT", "limit", "buy", "10", "90000");

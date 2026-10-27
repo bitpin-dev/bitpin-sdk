@@ -1,5 +1,5 @@
 {
-  "name": "bitpin-sdk",
+  "name": "@bitpin-dev/bitpin-sdk",
   "version": "0.1.0",
   "description": "Official TypeScript SDK for the Bitpin exchange API (REST + WebSocket), ccxt-shaped",
   "license": "MIT",
@@ -73,5 +73,9 @@
       "version": ">=10.9",
       "onFail": "error"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
