@@ -25,7 +25,7 @@ BitpinError
 | Request | Retried on `NetworkError`? |
 |---|---|
 | GET requests and the deposit address | yes: up to `max_retries` with 0.5 s, 1 s, 2 s… backoff; a 429 only if `retry_after` ≤ 5 s |
-| create order, bulk create, cancel, withdraw, OTP | **never** |
+| create order, bulk create, cancel, withdraw, OTP | **never**. The one exception: after a 401 (the server rejected the token before processing anything) the client refreshes the token and sends the request once more |
 
 When `create_order` raises a `NetworkError`, the order may or may not exist. Look it up by your `clientOrderId` before placing it again:
 

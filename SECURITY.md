@@ -19,7 +19,7 @@ In scope: this SDK (credential handling, token storage, request sending, retries
 
 - **Credentials** are sent only to the configured HTTPS API, in the authenticate request body and as a bearer token. They never appear in `repr()`, logs or exception messages.
 - **Tokens** are kept in memory by default. `FileTokenStore` writes them with mode 0600 in a 0700 directory, under a hash of the API key.
-- **Write operations** (orders, cancels, withdrawals, OTP) are never retried automatically, so a timeout can't duplicate an order or a withdrawal.
+- **Write operations** (orders, cancels, withdrawals, OTP) are never retried after a timeout or server error, so a lost response can't duplicate an order or a withdrawal. The only resend is after a 401, which the server rejected before processing.
 - **Withdrawals** require your OTP codes; the SDK never stores or generates them.
 - **Numbers** are exact `Decimal` values; no float rounding reaches an order.
 - **TLS** verification is always on.
