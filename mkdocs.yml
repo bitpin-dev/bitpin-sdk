@@ -56,6 +56,7 @@ plugins:
             Errors: خطاها
             Not available yet: فعلاً موجود نیست
             Migrating from ccxt: مهاجرت از ccxt
+            TypeScript: تایپ‌اسکریپت
             FAQ: پرسش‌های رایج
 
 nav:
@@ -71,4 +72,5 @@ nav:
   - Errors: errors.md
   - Not available yet: not-supported.md
   - Migrating from ccxt: migrating-from-ccxt.md
+  - TypeScript: typescript.md
   - FAQ: faq.md

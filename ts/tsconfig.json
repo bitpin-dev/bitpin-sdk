@@ -15,7 +15,13 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "bitpin-sdk": ["./src/index.ts"]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "rootDir": ".."
   },
-  "include": ["src", "test", "*.config.ts"]
+  "include": ["src", "test", "*.config.ts", "../examples/ts"]
 }

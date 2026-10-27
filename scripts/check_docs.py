@@ -35,6 +35,17 @@ def public_methods() -> list[str]:
     )
 
 
+def ts_methods() -> list[str]:
+    """Public methods of the TypeScript client, read from its source."""
+    source = (ROOT / "ts" / "src" / "client.ts").read_text(encoding="utf-8")
+    body = source[source.index("export class Bitpin") :]
+    body = body[: body.index("\n}\n")]  # the class only
+    names = re.findall(r"^  (?:async )?([a-z][A-Za-z]+)\(", body, re.MULTILINE)
+    return sorted(set(names) - {"constructor", "implicit", "retryDelay", "send", "credentials",
+                                "withAuthLock", "accessToken", "paged", "allPages", "websocket",
+                                "toString", "toJSON"})
+
+
 def read_dir(path: Path) -> str:
     return "\n".join(p.read_text(encoding="utf-8") for p in sorted(path.glob("*.md")))
 
@@ -56,6 +67,13 @@ def check() -> list[str]:
         for where, text in texts.items():
             if not re.search(rf"\b{method}\b", text):
                 problems.append(f"{where}: method {method} is not documented")
+
+    for lang in ("en", "fa"):
+        page = ROOT / "docs" / lang / "typescript.md"
+        text = page.read_text(encoding="utf-8") if page.exists() else ""
+        for method in ts_methods():
+            if f"`{method}" not in text:
+                problems.append(f"docs/{lang}/typescript.md: TypeScript method {method} is not documented")
 
     for lang in ("en", "fa"):
         page = ROOT / "docs" / lang / "rate-limits.md"

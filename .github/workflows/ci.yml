@@ -43,6 +43,7 @@ jobs:
       - run: uv run python ../scripts/gen_python.py --check
       - run: uv run python ../scripts/gen_sync.py --check
       - run: uv run python ../scripts/gen_llms_full.py --check
+      - run: uv run python ../scripts/gen_ts.py --check
 
   test:
     name: Test (Python ${{ matrix.python }}, ${{ matrix.os }})
@@ -71,6 +72,36 @@ jobs:
           uv venv /tmp/clean
           uv pip install --python /tmp/clean dist/*.whl
           /tmp/clean/bin/python -c "import bitpin_sdk; print(bitpin_sdk.__version__)"
+
+  typescript:
+    name: TypeScript (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
+    defaults:
+      run:
+        working-directory: ts
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: ts/package-lock.json
+      - run: npm ci
+      - run: npx biome ci . ../examples/ts
+      - run: npx tsc --noEmit
+      - run: npx vitest run --coverage
+      - run: npm run build
+      - name: Pack and import the package in a clean project
+        run: |
+          npm pack
+          mkdir /tmp/clean && cd /tmp/clean && npm init -y >/dev/null
+          npm install "$GITHUB_WORKSPACE"/ts/bitpin-sdk-*.tgz
+          node --input-type=module -e "import { Bitpin, VERSION } from 'bitpin-sdk'; console.log(VERSION, typeof new Bitpin().fetchTicker)"
+          node -e "const { Bitpin } = require('bitpin-sdk'); console.log(typeof Bitpin)"
 
   docs:
     name: Docs (en + fa)

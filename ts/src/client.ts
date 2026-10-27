@@ -80,7 +80,6 @@ export interface OrderRequest {
 }
 
 // Implicit methods are assigned in the constructor; this interface gives them types.
-// biome-ignore lint/suspicious/noUnsafeDeclarationMerging: declaration merging is intended
 export interface Bitpin extends ImplicitApi {}
 
 // biome-ignore lint/suspicious/noUnsafeDeclarationMerging: see above
