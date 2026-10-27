@@ -2,7 +2,6 @@
 
 All notable changes to the Python SDK, written by release-please from Conventional Commits.
 
-# Changelog
 
 ## 0.1.0 (2026-10-27)
 
