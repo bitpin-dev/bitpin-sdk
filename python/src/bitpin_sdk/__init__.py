@@ -9,11 +9,13 @@ __version__ = "0.1.0"
 
 from bitpin_sdk import errors
 from bitpin_sdk._async.client import AsyncBitpin
+from bitpin_sdk._sync.client import Bitpin
 from bitpin_sdk.config import Config, RateLimit
 from bitpin_sdk.token_store import FileTokenStore, MemoryTokenStore, TokenStore
 
 __all__ = [
     "AsyncBitpin",
+    "Bitpin",
     "Config",
     "FileTokenStore",
     "MemoryTokenStore",
