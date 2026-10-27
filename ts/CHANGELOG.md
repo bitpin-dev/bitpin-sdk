@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/bitpin-dev/bitpin-sdk/compare/ts-v0.1.0...ts-v0.1.1) (2026-10-27)
+
+
+### Bug fixes
+
+* **ts:** publish as @bitpin-dev/bitpin-sdk under the bitpin-dev npm org ([c5d3db8](https://github.com/bitpin-dev/bitpin-sdk/commit/c5d3db809c7ffd9dd53b0cd3e8d268b8743bff69))
+
 ## 0.1.0 (2026-10-27)
 
 
