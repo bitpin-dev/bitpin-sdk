@@ -193,7 +193,10 @@ async def test_resend_withdraw_otp(client: Any, mock: respx.MockRouter) -> None:
     assert sent(retry) == {"first": False, "use_voice_call": True}
 
 
-async def test_paginate_without_limit_reads_one_page(client: Any, mock: respx.MockRouter) -> None:
+async def test_paginate_without_limit_uses_the_max_page_size(
+    client: Any, mock: respx.MockRouter
+) -> None:
     deposits = route(mock, "private_get_wlt_deposits")
     await call(client.fetch_deposits(params={"paginate": True}))
-    assert deposits.call_count == 1
+    assert deposits.calls.last.request.url.params["limit"] == "1000"
+    assert deposits.call_count == 1  # the fixture page is shorter than the limit
