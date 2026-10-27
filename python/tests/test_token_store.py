@@ -61,3 +61,18 @@ def test_file_store_default_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
 def test_file_store_rejects_path_traversal(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="key id"):
         FileTokenStore(tmp_path).save("../x", TOKENS)
+
+
+def test_file_store_survives_a_leftover_temp_path(tmp_path: Path) -> None:
+    """Another process mid-save (or a crash) can leave <id>.tmp behind; saving still works."""
+    (tmp_path / "abc.tmp").mkdir()
+    store = FileTokenStore(tmp_path)
+    store.save("abc", TOKENS)
+    assert store.load("abc") == TOKENS
+
+
+def test_file_store_rejects_wrongly_typed_file(tmp_path: Path) -> None:
+    (tmp_path / "abc.json").write_text(
+        '{"access": "a", "refresh": "r", "access_exp": "soon", "refresh_exp": 1}', encoding="utf-8"
+    )
+    assert FileTokenStore(tmp_path).load("abc") is None

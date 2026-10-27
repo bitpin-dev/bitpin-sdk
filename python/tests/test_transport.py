@@ -380,3 +380,16 @@ async def test_late_401_for_an_old_token_does_not_refresh_again(
     client._tokens.expire_access(first)  # the late 401 of a request that used `first`
     await call(client.private_get_wlt_wallets())
     assert refresh.call_count == 0
+
+
+async def test_credentials_are_not_reachable_through_exception_chaining(
+    client_factory: Any, mock: respx.MockRouter
+) -> None:
+    client = client_factory(max_retries=0)
+    mock.route(method="POST", path="/api/v1/usr/authenticate/").mock(
+        side_effect=httpx.ConnectError("down")
+    )
+    with pytest.raises(errors.NetworkError) as info:
+        await call(client.private_get_wlt_wallets())
+    assert info.value.__cause__ is None
+    assert info.value.__suppress_context__ is True
