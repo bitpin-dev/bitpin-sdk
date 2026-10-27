@@ -225,9 +225,12 @@ async def test_fetch_orders_paginates_by_id_cursor(client: Any, mock: respx.Mock
 
 
 async def test_paginate_respects_max_pages(client: Any, mock: respx.MockRouter) -> None:
-    full = [{**body("private_post_odr_orders"), "id": i} for i in (2, 1)]
+    pages = [
+        [{**body("private_post_odr_orders"), "id": n * 10 + i} for i in (2, 1)]
+        for n in (9, 8, 7, 6)
+    ]
     orders = mock.route(method="GET", path="/api/v1/odr/orders/").mock(
-        return_value=httpx.Response(200, json=full)
+        side_effect=[httpx.Response(200, json=p) for p in pages]
     )
     await call(client.fetch_orders(limit=2, params={"paginate": True, "maxPages": 3}))
     assert orders.call_count == 3
@@ -369,3 +372,43 @@ async def test_fetch_order_history_validates(
 ) -> None:
     with pytest.raises(errors.BadRequest, match=message):
         await call(client.fetch_order_history(**kwargs))
+
+
+async def test_open_orders_paginate_without_limit_reads_every_page(
+    client: Any, mock: respx.MockRouter
+) -> None:
+    full = [{**body("private_post_odr_orders"), "id": 1000 + i} for i in range(250)]
+    rest = [{**body("private_post_odr_orders"), "id": 5}]
+    orders = mock.route(method="GET", path="/api/v1/odr/orders/").mock(
+        side_effect=[httpx.Response(200, json=full), httpx.Response(200, json=rest)]
+    )
+    result = await call(client.fetch_open_orders(params={"paginate": True}))
+    assert orders.calls[0].request.url.params["limit"] == "250"
+    assert orders.calls[1].request.url.params["offset"] == "1000"
+    assert len(result) == 251
+
+
+async def test_pagination_stops_when_the_offset_does_not_move(
+    client: Any, mock: respx.MockRouter
+) -> None:
+    same = [{**body("private_post_odr_orders"), "id": i} for i in (2, 1)]
+    orders = mock.route(method="GET", path="/api/v1/odr/orders/").mock(
+        return_value=httpx.Response(200, json=same)
+    )
+    result = await call(client.fetch_orders(limit=2, params={"paginate": True}))
+    assert orders.call_count == 2
+    assert len(result) == 2
+
+
+async def test_order_history_stops_on_a_repeated_cursor(
+    client: Any, mock: respx.MockRouter
+) -> None:
+    row = body("private_get_odr_order_history")["results"][0]
+    history = mock.route(method="GET", path="/api/v1/odr/order_history/").mock(
+        return_value=httpx.Response(
+            200, json={"results": [row], "next_cursor": "same", "has_next": True}
+        )
+    )
+    result = await call(client.fetch_order_history(params={"paginate": True}))
+    assert history.call_count == 2
+    assert len(result) == 1
