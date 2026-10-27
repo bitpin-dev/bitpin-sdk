@@ -17,3 +17,10 @@ site/
 !.env.example
 .DS_Store
 .hypothesis/
+
+# TypeScript and Go build output (ignored on every branch)
+node_modules/
+ts/dist/
+ts/coverage/
+*.tgz
+go/coverage.out
