@@ -20,7 +20,7 @@ from typing import Any, ClassVar
 import httpx
 
 from bitpin_sdk import __version__, errors
-from bitpin_sdk._sync._compat import Lock, default_sleep
+from bitpin_sdk._sync._compat import Lock, default_sleep, websocket
 from bitpin_sdk._core import parse
 from bitpin_sdk._core.auth import TokenState
 from bitpin_sdk._core.errors import map_error, not_supported
@@ -87,6 +87,7 @@ class Bitpin:
         http_client: httpx.Client | None = None,
         clock: Callable[[], float] = time.time,
         sleep: Callable[[float], Any] = default_sleep,
+        ws_transport_factory: Any = None,
     ) -> None:
         self.config = Config.coerce(config)
         self._clock = clock
@@ -98,6 +99,8 @@ class Bitpin:
         self._store: TokenStore = self.config.token_store or MemoryTokenStore()
         self._store_loaded = False
         self._auth_lock = Lock()
+        self._ws_factory = ws_transport_factory
+        self._ws: Any = None
         self.markets: dict[str, Market] = {}
         self.markets_by_id: dict[str, Market] = {}
 
@@ -111,7 +114,9 @@ class Bitpin:
         self.close()
 
     def close(self) -> None:
-        """Close the HTTP connection pool (only if the client created it)."""
+        """Close the WebSocket and the HTTP connection pool (if the client created it)."""
+        if self._ws is not None:
+            self._ws.close()
         if self._owns_http:
             self._http.close()
 
@@ -727,6 +732,43 @@ class Bitpin:
             if limit is None:
                 break
         return rows
+
+    # --- websocket -------------------------------------------------------
+
+    def _websocket(self) -> Any:
+        if self._ws is None:
+            self._ws = websocket(self, self._ws_factory)
+        return self._ws
+
+    def watch_ticker(self, symbol: str) -> Ticker:
+        """Wait for the next 24h ticker update of ``symbol``."""
+        result: Ticker = self._websocket().watch_ticker(symbol)
+        return result
+
+    def watch_ohlcv(self, symbol: str, timeframe: str = "1m") -> list[OHLCV]:
+        """Wait for the next candles of ``timeframe``."""
+        result: list[OHLCV] = self._websocket().watch_ohlcv(symbol, timeframe)
+        return result
+
+    def watch_order_book(self, symbol: str) -> OrderBook:
+        """Wait for the next order-book update of ``symbol``."""
+        result: OrderBook = self._websocket().watch_order_book(symbol)
+        return result
+
+    def watch_trades(self, symbol: str) -> list[Trade]:
+        """Wait for the next public trades of ``symbol``."""
+        result: list[Trade] = self._websocket().watch_trades(symbol)
+        return result
+
+    def watch_orders(self, symbol: str | None = None) -> Order:
+        """Wait for the next update of one of your orders."""
+        result: Order = self._websocket().watch_orders(symbol)
+        return result
+
+    def watch_my_trades(self, symbol: str | None = None) -> Trade:
+        """Wait for your next fill."""
+        result: Trade = self._websocket().watch_my_trades(symbol)
+        return result
 
     # --- not offered by Bitpin yet ---------------------------------------------------
 
