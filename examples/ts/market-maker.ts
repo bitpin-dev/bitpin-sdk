@@ -3,7 +3,7 @@
 // previous quotes. Whatever ends the loop, the last quotes are cancelled.
 //   node --experimental-strip-types examples/ts/market-maker.ts --symbol USDT/IRT --size 10 [--live]
 import { randomUUID } from "node:crypto";
-import { Bitpin, type BitpinOptions, Decimal, InsufficientFunds, type OrderRequest } from "bitpin-sdk";
+import { Bitpin, type BitpinOptions, Decimal, InsufficientFunds, type OrderRequest } from "@bitpin-dev/bitpin-sdk";
 import { args, dryRun, show } from "./common.ts";
 
 export function quotes(mid: Decimal, spreadBps: Decimal, tick: Decimal): [Decimal, Decimal] {

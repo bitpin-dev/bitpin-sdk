@@ -40,8 +40,12 @@ def render() -> dict[str, str]:
         src = Path(tmp) / "_async"
         src.mkdir()
         for name in FILES:
-            (src / name).write_text((PKG / "_async" / name).read_text(encoding="utf-8"), encoding="utf-8")
-        rule = unasync.Rule(str(src) + "/", str(Path(tmp) / "_sync") + "/", additional_replacements=REPLACEMENTS)
+            (src / name).write_text(
+                (PKG / "_async" / name).read_text(encoding="utf-8"), encoding="utf-8"
+            )
+        rule = unasync.Rule(
+            str(src) + "/", str(Path(tmp) / "_sync") + "/", additional_replacements=REPLACEMENTS
+        )
         unasync.unasync_files([str(src / n) for n in FILES], [rule])
         out: dict[str, str] = {}
         for name in FILES:
@@ -56,7 +60,11 @@ def main(argv: list[str]) -> int:
     rendered = render()
     target = PKG / "_sync"
     if "--check" in argv:
-        stale = [n for n, text in rendered.items() if not (target / n).exists() or (target / n).read_text(encoding="utf-8") != text]
+        stale = [
+            n
+            for n, text in rendered.items()
+            if not (target / n).exists() or (target / n).read_text(encoding="utf-8") != text
+        ]
         if stale:
             print(f"_sync is stale ({', '.join(stale)}). Run: python scripts/gen_sync.py")
             return 1

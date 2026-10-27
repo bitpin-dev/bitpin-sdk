@@ -1,0 +1,664 @@
+{
+  "market": {
+    "parser": "parse_market",
+    "fixture": "public_get_mkt_markets",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "active": true,
+      "base": "BTC",
+      "baseId": "BTC",
+      "contract": false,
+      "future": false,
+      "id": "BTC_IRT",
+      "limits": {
+        "amount": {
+          "max": null,
+          "min": null
+        },
+        "cost": {
+          "max": null,
+          "min": null
+        },
+        "price": {
+          "max": null,
+          "min": null
+        }
+      },
+      "margin": false,
+      "option": false,
+      "precision": {
+        "amount": "0.00000001",
+        "cost": "1",
+        "price": "1"
+      },
+      "quote": "IRT",
+      "quoteId": "IRT",
+      "spot": true,
+      "swap": false,
+      "symbol": "BTC/IRT",
+      "type": "spot"
+    }
+  },
+  "market_suspended": {
+    "parser": "parse_market",
+    "fixture": "public_get_mkt_markets",
+    "path": [
+      2
+    ],
+    "args": [],
+    "output": {
+      "active": false,
+      "base": "ETH",
+      "baseId": "ETH",
+      "contract": false,
+      "future": false,
+      "id": "ETH_USDT",
+      "limits": {
+        "amount": {
+          "max": null,
+          "min": null
+        },
+        "cost": {
+          "max": null,
+          "min": null
+        },
+        "price": {
+          "max": null,
+          "min": null
+        }
+      },
+      "margin": false,
+      "option": false,
+      "precision": {
+        "amount": "0.0001",
+        "cost": "0.01",
+        "price": "0.01"
+      },
+      "quote": "USDT",
+      "quoteId": "USDT",
+      "spot": true,
+      "swap": false,
+      "symbol": "ETH/USDT",
+      "type": "spot"
+    }
+  },
+  "currency": {
+    "parser": "parse_currency",
+    "fixture": "public_get_mkt_currencies",
+    "path": [
+      1
+    ],
+    "args": [],
+    "output": {
+      "active": true,
+      "code": "BTC",
+      "id": "BTC",
+      "name": "Bitcoin",
+      "precision": "0.00000001"
+    }
+  },
+  "ticker": {
+    "parser": "parse_ticker",
+    "fixture": "public_get_mkt_tickers",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "ask": null,
+      "average": null,
+      "baseVolume": null,
+      "bid": null,
+      "change": null,
+      "close": "3145737420",
+      "datetime": "2025-10-27T07:35:30.189Z",
+      "high": "3200000000",
+      "last": "3145737420",
+      "low": "3100000000",
+      "open": null,
+      "percentage": "-1.58",
+      "quoteVolume": null,
+      "symbol": "BTC/IRT",
+      "timestamp": 1761550530189
+    }
+  },
+  "ticker_sparse": {
+    "parser": "parse_ticker",
+    "fixture": "public_get_mkt_tickers",
+    "path": [
+      1
+    ],
+    "args": [],
+    "output": {
+      "ask": null,
+      "average": null,
+      "baseVolume": null,
+      "bid": null,
+      "change": null,
+      "close": "105230",
+      "datetime": "2025-10-27T07:35:30.189Z",
+      "high": null,
+      "last": "105230",
+      "low": null,
+      "open": null,
+      "percentage": "0.42",
+      "quoteVolume": null,
+      "symbol": "USDT/IRT",
+      "timestamp": 1761550530189
+    }
+  },
+  "order_book": {
+    "parser": "parse_order_book",
+    "fixture": "public_get_mth_orderbook_symbol",
+    "path": [],
+    "args": [
+      "BTC/IRT"
+    ],
+    "output": {
+      "asks": [
+        [
+          "3150000000",
+          "0.01"
+        ],
+        [
+          "3160000000",
+          "0.2"
+        ]
+      ],
+      "bids": [
+        [
+          "3140000000",
+          "0.05"
+        ],
+        [
+          "3130000000",
+          "1"
+        ]
+      ],
+      "datetime": null,
+      "nonce": null,
+      "symbol": "BTC/IRT",
+      "timestamp": null
+    }
+  },
+  "trade": {
+    "parser": "parse_trade",
+    "fixture": "public_get_mth_matches_symbol",
+    "path": [
+      0
+    ],
+    "args": [
+      "BTC/IRT"
+    ],
+    "output": {
+      "amount": "0.002",
+      "cost": "6291474.84",
+      "datetime": "2025-10-27T07:35:30.149Z",
+      "fee": null,
+      "id": "73802972_73807087",
+      "order": null,
+      "price": "3145737420",
+      "side": "buy",
+      "symbol": "BTC/IRT",
+      "takerOrMaker": null,
+      "timestamp": 1761550530149,
+      "type": null
+    }
+  },
+  "my_trade": {
+    "parser": "parse_my_trade",
+    "fixture": "private_get_odr_fills",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "amount": "0.001",
+      "cost": "3160000",
+      "datetime": "2026-10-27T06:50:00.500Z",
+      "fee": {
+        "cost": "11060",
+        "currency": "IRT"
+      },
+      "id": "65375307",
+      "order": "535179300",
+      "price": "3160000000",
+      "side": "sell",
+      "symbol": "BTC/IRT",
+      "takerOrMaker": null,
+      "timestamp": 1793083800500,
+      "type": null
+    }
+  },
+  "ohlcv": {
+    "parser": "parse_ohlcv",
+    "fixture": "public_get_mkt_candles",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": [
+      1761550200000,
+      "3100000000",
+      "3120000000",
+      "3090000000",
+      "3110000000",
+      "1.25"
+    ]
+  },
+  "order_open": {
+    "parser": "parse_order",
+    "fixture": "private_post_odr_orders",
+    "path": [],
+    "args": [],
+    "output": {
+      "amount": "0.001",
+      "average": null,
+      "clientOrderId": "mm-bid-1",
+      "cost": "0",
+      "datetime": "2026-10-27T06:45:30.123Z",
+      "fee": {
+        "cost": "0",
+        "currency": null
+      },
+      "filled": "0",
+      "id": "535179385",
+      "lastTradeTimestamp": null,
+      "postOnly": null,
+      "price": "3100000000",
+      "reduceOnly": null,
+      "remaining": "0.001",
+      "side": "buy",
+      "status": "open",
+      "stopPrice": null,
+      "symbol": "BTC/IRT",
+      "takeProfitPrice": null,
+      "timeInForce": null,
+      "timestamp": 1793083530123,
+      "trades": [],
+      "triggerPrice": null,
+      "type": "limit"
+    }
+  },
+  "order_filled": {
+    "parser": "parse_order",
+    "fixture": "private_get_odr_orders",
+    "path": [
+      1
+    ],
+    "args": [],
+    "output": {
+      "amount": "0.001",
+      "average": "3160000000",
+      "clientOrderId": "mm-ask-1",
+      "cost": "3160000",
+      "datetime": "2026-10-27T06:45:30.123Z",
+      "fee": {
+        "cost": "11060",
+        "currency": null
+      },
+      "filled": "0.001",
+      "id": "535179300",
+      "lastTradeTimestamp": 1793083800000,
+      "postOnly": null,
+      "price": "3160000000",
+      "reduceOnly": null,
+      "remaining": "0",
+      "side": "sell",
+      "status": "closed",
+      "stopPrice": null,
+      "symbol": "BTC/IRT",
+      "takeProfitPrice": null,
+      "timeInForce": null,
+      "timestamp": 1793083530123,
+      "trades": [],
+      "triggerPrice": null,
+      "type": "limit"
+    }
+  },
+  "history_order": {
+    "parser": "parse_history_order",
+    "fixture": "private_get_odr_order_history",
+    "path": [
+      "results",
+      0
+    ],
+    "args": [],
+    "output": {
+      "amount": "0.002",
+      "average": "3100000000",
+      "clientOrderId": null,
+      "cost": "6200000",
+      "datetime": "2025-10-26T06:26:40.000Z",
+      "fee": {
+        "cost": "0.000007",
+        "currency": null
+      },
+      "filled": "0.002",
+      "id": "535100000",
+      "lastTradeTimestamp": 1761460000500,
+      "postOnly": null,
+      "price": null,
+      "reduceOnly": null,
+      "remaining": "0",
+      "side": "buy",
+      "status": "closed",
+      "stopPrice": null,
+      "symbol": "BTC/IRT",
+      "takeProfitPrice": null,
+      "timeInForce": null,
+      "timestamp": 1761460000000,
+      "trades": [],
+      "triggerPrice": null,
+      "type": "market"
+    }
+  },
+  "bulk_orders": {
+    "parser": "parse_bulk_orders",
+    "fixture": "private_post_odr_orders_bulk",
+    "path": [],
+    "args": [],
+    "output": [
+      {
+        "amount": "0.001",
+        "average": null,
+        "clientOrderId": "mm-bid-1",
+        "cost": "0",
+        "datetime": "2026-10-27T06:45:30.123Z",
+        "fee": {
+          "cost": "0",
+          "currency": null
+        },
+        "filled": "0",
+        "id": "535179385",
+        "lastTradeTimestamp": null,
+        "postOnly": null,
+        "price": "3100000000",
+        "reduceOnly": null,
+        "remaining": "0.001",
+        "side": "buy",
+        "status": "open",
+        "stopPrice": null,
+        "symbol": "BTC/IRT",
+        "takeProfitPrice": null,
+        "timeInForce": null,
+        "timestamp": 1793083530123,
+        "trades": [],
+        "triggerPrice": null,
+        "type": "limit"
+      },
+      {
+        "amount": "0.001",
+        "average": null,
+        "clientOrderId": "mm-bid-2",
+        "cost": "0",
+        "datetime": "2026-10-27T06:45:30.123Z",
+        "fee": {
+          "cost": "0",
+          "currency": null
+        },
+        "filled": "0",
+        "id": "535179386",
+        "lastTradeTimestamp": null,
+        "postOnly": null,
+        "price": "3090000000",
+        "reduceOnly": null,
+        "remaining": "0.001",
+        "side": "buy",
+        "status": "open",
+        "stopPrice": null,
+        "symbol": "BTC/IRT",
+        "takeProfitPrice": null,
+        "timeInForce": null,
+        "timestamp": 1793083530123,
+        "trades": [],
+        "triggerPrice": null,
+        "type": "limit"
+      }
+    ]
+  },
+  "balance": {
+    "parser": "parse_balance",
+    "fixture": "private_get_wlt_wallets",
+    "path": [],
+    "args": [],
+    "output": {
+      "BTC": {
+        "free": "0.0125",
+        "total": "0.0135",
+        "used": "0.001"
+      },
+      "IRT": {
+        "free": "150000000",
+        "total": "153100000",
+        "used": "3100000"
+      },
+      "USDT": {
+        "free": "0",
+        "total": "0",
+        "used": "0"
+      },
+      "free": {
+        "BTC": "0.0125",
+        "IRT": "150000000",
+        "USDT": "0"
+      },
+      "total": {
+        "BTC": "0.0135",
+        "IRT": "153100000",
+        "USDT": "0"
+      },
+      "used": {
+        "BTC": "0.001",
+        "IRT": "3100000",
+        "USDT": "0"
+      }
+    }
+  },
+  "trading_fee": {
+    "parser": "parse_trading_fee",
+    "fixture": "private_get_mkt_commissions",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "maker": "0.003",
+      "percentage": true,
+      "symbol": "BTC/IRT",
+      "taker": "0.0035",
+      "tierBased": true
+    }
+  },
+  "deposit": {
+    "parser": "parse_deposit",
+    "fixture": "private_get_wlt_deposits",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "address": null,
+      "addressTo": null,
+      "amount": "250.5",
+      "comment": null,
+      "currency": "USDT",
+      "datetime": "2026-10-26T05:30:00.000Z",
+      "fee": null,
+      "id": "9001",
+      "internal": false,
+      "network": "TRX",
+      "status": "ok",
+      "tag": null,
+      "timestamp": 1792992600000,
+      "txid": "0000000000000000000000000000000000000000000000000000000000000000",
+      "type": "deposit",
+      "updated": null
+    }
+  },
+  "withdrawal_crypto": {
+    "parser": "parse_withdrawal",
+    "fixture": "private_get_wlt_withdraws",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "address": "TTestAddressDoNotUse000000000000000",
+      "addressTo": "TTestAddressDoNotUse000000000000000",
+      "amount": "100",
+      "comment": null,
+      "currency": "USDT",
+      "datetime": "2026-10-25T08:30:00.000Z",
+      "fee": {
+        "cost": "1",
+        "currency": "USDT"
+      },
+      "id": "7001",
+      "internal": null,
+      "network": "TRX",
+      "status": "ok",
+      "tag": null,
+      "timestamp": 1792917000000,
+      "txid": "1111111111111111111111111111111111111111111111111111111111111111",
+      "type": "withdrawal",
+      "updated": 1792918800000
+    }
+  },
+  "withdrawal_irt": {
+    "parser": "parse_withdrawal",
+    "fixture": "private_get_wlt_withdraws",
+    "path": [
+      1
+    ],
+    "args": [],
+    "output": {
+      "address": null,
+      "addressTo": null,
+      "amount": "5000000",
+      "comment": null,
+      "currency": "IRT",
+      "datetime": "2026-10-26T04:30:00.000Z",
+      "fee": {
+        "cost": "0",
+        "currency": "IRT"
+      },
+      "id": "7002",
+      "internal": null,
+      "network": null,
+      "status": "pending",
+      "tag": null,
+      "timestamp": 1792989000000,
+      "txid": null,
+      "type": "withdrawal",
+      "updated": null
+    }
+  },
+  "withdrawal_created": {
+    "parser": "parse_withdrawal",
+    "fixture": "private_post_wlt_withdraws",
+    "path": [],
+    "args": [],
+    "output": {
+      "address": "TTestAddressDoNotUse000000000000000",
+      "addressTo": "TTestAddressDoNotUse000000000000000",
+      "amount": "50",
+      "comment": null,
+      "currency": "USDT",
+      "datetime": "2026-10-27T07:30:00.000Z",
+      "fee": {
+        "cost": "1",
+        "currency": "USDT"
+      },
+      "id": "7003",
+      "internal": null,
+      "network": "TRX",
+      "status": "pending",
+      "tag": null,
+      "timestamp": 1793086200000,
+      "txid": null,
+      "type": "withdrawal",
+      "updated": null
+    }
+  },
+  "deposit_address": {
+    "parser": "parse_deposit_address",
+    "fixture": "private_post_wlt_address",
+    "path": [],
+    "args": [
+      "TRX"
+    ],
+    "output": {
+      "address": "TTestAddressDoNotUse000000000000000",
+      "currency": "USDT",
+      "network": "TRX",
+      "tag": null
+    }
+  },
+  "currency_network_v2": {
+    "parser": "parse_currency_network",
+    "fixture": "private_get_wlt_networks",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "addressPattern": null,
+      "deposit": true,
+      "id": "TRX",
+      "name": "Tron",
+      "network": "TRX",
+      "withdraw": false
+    }
+  },
+  "currency_network_v1": {
+    "parser": "parse_currency_network",
+    "fixture": "private_get_wlt_networks",
+    "path": [
+      1
+    ],
+    "args": [],
+    "output": {
+      "addressPattern": "^0x[a-fA-F0-9]{40}$",
+      "deposit": true,
+      "id": "ETH",
+      "name": "Ethereum",
+      "network": "ETH",
+      "withdraw": true
+    }
+  },
+  "network": {
+    "parser": "parse_network",
+    "fixture": "public_get_mkt_networks",
+    "path": [
+      1
+    ],
+    "args": [],
+    "output": {
+      "addressPattern": "^T[1-9A-HJ-NP-Za-km-z]{33}$",
+      "deposit": true,
+      "id": "TRX",
+      "name": "Tron",
+      "network": "TRX",
+      "withdraw": false
+    }
+  },
+  "bank_account": {
+    "parser": "parse_bank_account",
+    "fixture": "private_get_wlt_account_numbers",
+    "path": [
+      0
+    ],
+    "args": [],
+    "output": {
+      "card": "000000******0000",
+      "currency": "IRT",
+      "iban": "IR000000000000000000000000",
+      "id": "123",
+      "status": "verified"
+    }
+  }
+}

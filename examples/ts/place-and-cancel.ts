@@ -1,7 +1,7 @@
 // Place a limit order with your own client order id, read it back, then cancel it.
 //   node --experimental-strip-types examples/ts/place-and-cancel.ts --price 90000 --amount 10 [--live]
 import { randomUUID } from "node:crypto";
-import { Bitpin, type BitpinOptions } from "bitpin-sdk";
+import { Bitpin, type BitpinOptions } from "@bitpin-dev/bitpin-sdk";
 import { args, dryRun, show } from "./common.ts";
 
 export async function main(argv: string[], options: BitpinOptions = {}): Promise<number> {

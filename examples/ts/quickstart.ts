@@ -1,6 +1,6 @@
 // Read-only tour: markets, a ticker, the order book, and your balance if keys are set.
 //   node --experimental-strip-types examples/ts/quickstart.ts --symbol BTC/IRT
-import { Bitpin, type BitpinOptions } from "bitpin-sdk";
+import { Bitpin, type BitpinOptions } from "@bitpin-dev/bitpin-sdk";
 import { args, show } from "./common.ts";
 
 export async function main(argv: string[], options: BitpinOptions = {}): Promise<number> {

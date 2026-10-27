@@ -2,7 +2,9 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  resolve: { alias: { "bitpin-sdk": fileURLToPath(new URL("./src/index.ts", import.meta.url)) } },
+  resolve: {
+    alias: { "@bitpin-dev/bitpin-sdk": fileURLToPath(new URL("./src/index.ts", import.meta.url)) },
+  },
   test: {
     include: ["test/**/*.test.ts"],
     coverage: {

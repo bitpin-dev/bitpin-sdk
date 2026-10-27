@@ -6,7 +6,8 @@ A monorepo of hand-written SDKs for Bitpin's public API, one per language, all g
 
 ```
 spec/bitpin.yaml     single source of truth: endpoints, rate limits, constants, errors, has map
-fixtures/            one synthetic response per endpoint, replayed by every language's tests
+fixtures/            one synthetic response per endpoint, replayed by every language's tests;
+                     expected.json: what every language must parse them into (Python is the reference)
 python/src/bitpin_sdk/
   _generated/        from spec by scripts/gen_python.py        (generated)
   _core/             sans-I/O: requests, parsers, errors, auth state, limiter
@@ -53,7 +54,7 @@ npm run build                                  # tsup (JS) + tsc (declarations)
 cd ../python && uv run python ../scripts/gen_ts.py   # after editing spec/bitpin.yaml
 ```
 
-Go, from `go/` (Go ≥ 1.26; set `GOTOOLCHAIN=local` where proxy.golang.org is blocked):
+Go, from `go/` (Go ≥ 1.26). From Iran, `go env -w GOPROXY=https://goproxy.cn,direct` first; proxy.golang.org downloads return 403 there:
 
 ```bash
 go test -race -cover ./...                     # gate: 90 % statements

@@ -29,7 +29,7 @@ Order status: Bitpin initial/active → "open"; closed and fully filled → "clo
 
 ## TypeScript
 
-npm `bitpin-sdk` (Node ≥ 22): one async class `Bitpin`, same behaviour, ccxt JS names (`fetchTicker`, `createOrder`, `cancelOrders({ ids })`, `watchOrderBook`), implicit methods in camelCase (`publicGetMktTickers`), `Decimal` from decimal.js (re-exported), `timeout` in milliseconds. `new Bitpin({ apiKey, secret })` or `new Bitpin()` to read BITPIN_API_KEY / BITPIN_SECRET_KEY. Errors are the same classes, exported directly (`InsufficientFunds`) and as `errors`. [TypeScript guide](https://bitpin-dev.github.io/bitpin-sdk/typescript/).
+npm `@bitpin-dev/bitpin-sdk` (Node ≥ 22): one async class `Bitpin`, same behaviour, ccxt JS names (`fetchTicker`, `createOrder`, `cancelOrders({ ids })`, `watchOrderBook`), implicit methods in camelCase (`publicGetMktTickers`), `Decimal` from decimal.js (re-exported), `timeout` in milliseconds. `new Bitpin({ apiKey, secret })` or `new Bitpin()` to read BITPIN_API_KEY / BITPIN_SECRET_KEY. Errors are the same classes, exported directly (`InsufficientFunds`) and as `errors`. [TypeScript guide](https://bitpin-dev.github.io/bitpin-sdk/typescript/).
 
 ## Go
 
@@ -646,14 +646,14 @@ Methods only Bitpin has: `cancel_order_by_identifier`, `fetch_order_history`, `f
 
 # TypeScript
 
-`bitpin-sdk` on npm: the same SDK for TypeScript and JavaScript, with ccxt JS names and the same behaviour as the Python SDK. Node 22 or newer; Bun and Deno work too. It's meant for servers and bots: API secrets don't belong in a browser.
+`@bitpin-dev/bitpin-sdk` on npm (published by the `bitpin-dev` npm organization): the same SDK for TypeScript and JavaScript, with ccxt JS names and the same behaviour as the Python SDK. Node 22 or newer; Bun and Deno work too. It's meant for servers and bots: API secrets don't belong in a browser.
 
 ```bash
-npm install bitpin-sdk
+npm install @bitpin-dev/bitpin-sdk
 ```
 
 ```ts
-import { Bitpin, InsufficientFunds } from "bitpin-sdk";
+import { Bitpin, InsufficientFunds } from "@bitpin-dev/bitpin-sdk";
 
 const client = new Bitpin({ apiKey: process.env.BITPIN_API_KEY, secret: process.env.BITPIN_SECRET_KEY });
 const ticker = await client.fetchTicker("BTC/IRT");
@@ -678,7 +678,7 @@ Without options, `new Bitpin()` reads `BITPIN_API_KEY`, `BITPIN_SECRET_KEY` and 
 | Clients | `Bitpin` (sync) and `AsyncBitpin` | one `Bitpin`; every method returns a `Promise` |
 | Names | `fetch_order_book` | `fetchOrderBook` (ccxt JS) |
 | Implicit API | `client.public_get_mkt_tickers()` | `client.publicGetMktTickers()` |
-| Numbers | `decimal.Decimal` | `Decimal` from decimal.js, re-exported: `import { Decimal } from "bitpin-sdk"` |
+| Numbers | `decimal.Decimal` | `Decimal` from decimal.js, re-exported: `import { Decimal } from "@bitpin-dev/bitpin-sdk"` |
 | `timeout` | seconds | milliseconds, as in ccxt JS |
 | Bulk cancel | `cancel_orders(ids=[...])` | `cancelOrders({ ids: [...] })` or `{ identifiers: [...] }` |
 | Token store | `FileTokenStore()` | `new FileTokenStore()` (Node), async `TokenStore` interface |
@@ -716,7 +716,7 @@ const client = new Bitpin({
 The classes are the same as in Python and ccxt, and are exported both directly and as `errors`:
 
 ```ts
-import { errors, InsufficientFunds } from "bitpin-sdk";
+import { errors, InsufficientFunds } from "@bitpin-dev/bitpin-sdk";
 
 try {
   await client.createOrder("USDT/IRT", "limit", "buy", "10", "90000");
@@ -760,7 +760,18 @@ err = client.CancelOrderByIdentifier(ctx, "bot-1")
 ## Supported versions
 
 - **Go 1.26 or newer** (`go 1.26.0` in `go.mod`; the newest `centrifuge-go` needs it).
-- `go.mod` also pins `toolchain go1.27.3`. With the default `GOTOOLCHAIN=auto`, `go` downloads that exact toolchain, the way uv does for Python. Where `proxy.golang.org` is blocked (it returns 403 from Iran), set `GOTOOLCHAIN=local` and use a local Go 1.26 or newer.
+- `go.mod` also pins `toolchain go1.27.3`. With the default `GOTOOLCHAIN=auto`, `go` downloads that exact toolchain, the way uv does for Python.
+
+### From Iran
+
+`proxy.golang.org` serves module lists, but its downloads redirect to Google storage, which returns 403 from Iran. The toolchain download fails, and so can `go get`. These proxies serve modules **and** toolchains from Iran (checked 2026-10-27): `goproxy.cn`, `mirrors.aliyun.com/goproxy` and `proxy.golang.com.cn`. `goproxy.io` refuses downloads.
+
+```bash
+go env -w GOPROXY=https://goproxy.cn,https://mirrors.aliyun.com/goproxy,direct
+go get github.com/bitpin-dev/bitpin-sdk/go   # and the pinned toolchain downloads by itself
+```
+
+Checksums are still verified against `sum.golang.org`, which is reachable; keep the default `GOSUMDB`. If no proxy works, set `GOTOOLCHAIN=local` and install Go 1.26 or newer yourself.
 - Releases are tags `go/vX.Y.Z`; `go get github.com/bitpin-dev/bitpin-sdk/go@latest` picks the newest.
 
 ## Differences from Python

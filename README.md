@@ -9,7 +9,7 @@
 
 The official SDK for the [Bitpin](https://bitpin.ir) exchange API, for market makers, VIP traders, and the AI agents that write their bots.
 
-- Python (sync `Bitpin`, async `AsyncBitpin`), TypeScript (`bitpin-sdk` on npm) and Go (`github.com/bitpin-dev/bitpin-sdk/go`), all in this repository.
+- Python (sync `Bitpin`, async `AsyncBitpin`), TypeScript (`@bitpin-dev/bitpin-sdk` on npm) and Go (`github.com/bitpin-dev/bitpin-sdk/go`), all in this repository.
 - ccxt method names and result structures, so a ccxt bot ports with small changes.
 - `Decimal` for every price and amount.
 - Tokens cached and refreshed for you; the client stays under Bitpin's rate limits, which you can override with your VIP limits.
@@ -41,7 +41,7 @@ with Bitpin(Config.from_env()) as client:          # BITPIN_API_KEY, BITPIN_SECR
 | [`spec/bitpin.yaml`](spec/bitpin.yaml) | The API description every language is generated and tested against: endpoints, rate limits, errors, capabilities |
 | [`fixtures/`](fixtures) | Response samples shared by all languages' tests |
 | [`python/`](python) | The Python SDK ([changelog](python/CHANGELOG.md)) |
-| [`ts/`](ts) | The TypeScript SDK, npm `bitpin-sdk` ([changelog](ts/CHANGELOG.md), [guide](docs/en/typescript.md)) |
+| [`ts/`](ts) | The TypeScript SDK, npm `@bitpin-dev/bitpin-sdk` ([changelog](ts/CHANGELOG.md), [guide](docs/en/typescript.md)) |
 | [`go/`](go) | The Go SDK, `github.com/bitpin-dev/bitpin-sdk/go` ([changelog](go/CHANGELOG.md), [guide](docs/en/go.md)) |
 | [`examples/`](examples) | Runnable examples in Python and TypeScript, including a market-maker skeleton |
 | [`docs/en`](docs/en), [`docs/fa`](docs/fa) | The documentation site, in English and Persian |

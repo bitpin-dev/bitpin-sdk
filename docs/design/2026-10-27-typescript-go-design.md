@@ -11,7 +11,7 @@ Everything in the main design holds: one spec (`spec/bitpin.yaml`), one set of f
 - Each is a release-please component: tags `ts-v0.1.0` and `go/v0.1.0` (the `go/` prefix is what Go modules in a subdirectory require), its own `CHANGELOG.md`.
 - Docs: one page per language (`docs/{en,fa}/typescript.md`, `docs/{en,fa}/go.md`) mapping the shared concepts to that language's names, plus a section in `llms.txt`. The concept pages (rate limits, errors, not-supported, …) stay shared and use Python in examples.
 
-## TypeScript (`ts/`, npm `bitpin-sdk`)
+## TypeScript (`ts/`, npm `@bitpin-dev/bitpin-sdk`)
 
 - **Runtime:** Node ≥ 22 (current LTS lines), also Bun and Deno; uses the global `fetch`. Browsers are not a target: API secrets don't belong in a browser.
 - **Package:** ESM and CommonJS builds with type declarations (tsup), `"sideEffects": false`. TypeScript strict.

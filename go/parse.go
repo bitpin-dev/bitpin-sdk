@@ -284,7 +284,8 @@ func parseTradingFee(raw Info) TradingFee {
 		r := d.Div(hundred)
 		return &r
 	}
-	return TradingFee{Symbol: symbolOrRaw(raw["symbol"]), Maker: div(dec(raw["maker"])), Taker: div(dec(raw["taker"])), Info: raw}
+	return TradingFee{Symbol: symbolOrRaw(raw["symbol"]), Maker: div(dec(raw["maker"])), Taker: div(dec(raw["taker"])),
+		Percentage: true, TierBased: true, Info: raw}
 }
 
 var txStatus = map[string]string{"succeed": "ok", "failed": "failed", "canceled": "canceled"}
@@ -322,7 +323,8 @@ func parseWithdrawal(raw Info) Transaction {
 	crypto := asMap(raw["crypto_details"])
 	currency := str(raw["currency"])
 	return Transaction{ID: str(raw["id"]), TxID: str(crypto["tx_hash"]), Timestamp: ts, Datetime: msToISO(ts),
-		Network: str(crypto["network"]), Address: str(crypto["address"]), Tag: str(crypto["memo"]), Type: "withdrawal",
+		Network: str(crypto["network"]), Address: str(crypto["address"]), AddressTo: str(crypto["address"]),
+		Tag: str(crypto["memo"]), Type: "withdrawal",
 		Amount: dec(raw["amount"]), Currency: currency, Status: status(raw["state"]), Updated: isoToMs(raw["closed_at"]),
 		Fee: &Fee{Cost: dec(raw["commission"]), Currency: currency}, Internal: boolPtr(raw["internal"]),
 		Comment: str(raw["description"]), Info: raw}

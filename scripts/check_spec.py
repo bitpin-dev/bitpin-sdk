@@ -23,7 +23,9 @@ def main() -> int:
     if spec["default_domain"] not in spec["domains"]:
         print(f"default_domain {spec['default_domain']!r} is not one of the domains")
         return 1
-    print(f"spec ok: {len(spec['endpoints'])} endpoints, {len(spec['rate_limits'])} rate-limit buckets")
+    print(
+        f"spec ok: {len(spec['endpoints'])} endpoints, {len(spec['rate_limits'])} rate-limit buckets"
+    )
     return 0
 
 

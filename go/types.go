@@ -82,18 +82,20 @@ type Balances struct {
 type TradingFee struct {
 	Symbol       string
 	Maker, Taker *Decimal // ratios: 0.003 = 0.3 %
-	Info         Info
+	// Percentage and TierBased are ccxt's flags: fees are ratios and depend on your tier.
+	Percentage, TierBased bool
+	Info                  Info
 }
 
 type Transaction struct {
-	ID, TxID, Network, Address, Tag, Currency, Status, Comment string
-	Type                                                       string // "deposit" or "withdrawal"
-	Timestamp, Updated                                         *int64
-	Datetime                                                   string
-	Amount                                                     *Decimal
-	Fee                                                        *Fee
-	Internal                                                   *bool
-	Info                                                       Info
+	ID, TxID, Network, Address, AddressTo, Tag, Currency, Status, Comment string
+	Type                                                                  string // "deposit" or "withdrawal"
+	Timestamp, Updated                                                    *int64
+	Datetime                                                              string
+	Amount                                                                *Decimal
+	Fee                                                                   *Fee
+	Internal                                                              *bool
+	Info                                                                  Info
 }
 
 type DepositAddress struct {

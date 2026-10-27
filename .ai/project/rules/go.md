@@ -1,6 +1,6 @@
 # Rule: Go
 
-- Module `github.com/bitpin-dev/bitpin-sdk/go`, Go ≥ 1.26 (`go` directive), `toolchain` pinned to the newest Go. Keep dependencies on their newest releases. Where proxy.golang.org is blocked, work with `GOTOOLCHAIN=local`.
+- Module `github.com/bitpin-dev/bitpin-sdk/go`, Go ≥ 1.26 (`go` directive), `toolchain` pinned to the newest Go. Keep dependencies on their newest releases. From Iran use `GOPROXY=https://goproxy.cn,direct` (proxy.golang.org downloads return 403); `GOTOOLCHAIN=local` is the last resort.
 - Every exported call takes `context.Context` first and returns `(T, error)`. The Client is safe for concurrent use: state behind mutexes, single-flight auth, limiter reservations under its own lock. Run tests with `-race`.
 - Errors are `*Error` with a `Kind` from the `Err*` sentinels; `errors.Is` walks the ccxt hierarchy. Credentials requests never wrap the transport error (it holds the request body).
 - Numbers are shopspring `decimal.Decimal`; nullable result fields are `*Decimal`; JSON numbers are decoded with `UseNumber` and kept as strings, so no float rounding.
