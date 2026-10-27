@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "body": {
+    "id": 535179385,
+    "symbol": "BTC_IRT",
+    "type": "limit",
+    "side": "buy",
+    "price": "3100000000",
+    "average_price": "0",
+    "stop_price": null,
+    "oco_target_price": null,
+    "base_amount": "0.001",
+    "quote_amount": "3100000",
+    "identifier": "mm-bid-1",
+    "state": "active",
+    "closed_at": null,
+    "created_at": "2026-10-27T10:15:30.123456+03:30",
+    "dealed_base_amount": "0",
+    "dealed_quote_amount": "0",
+    "req_to_cancel": false,
+    "commission": "0"
+  }
+}

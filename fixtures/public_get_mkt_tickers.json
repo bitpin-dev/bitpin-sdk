@@ -1,0 +1,21 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "symbol": "BTC_IRT",
+      "price": "3145737420",
+      "daily_change_price": -1.58,
+      "low": "3100000000",
+      "high": "3200000000",
+      "timestamp": 1761550530.189
+    },
+    {
+      "symbol": "USDT_IRT",
+      "price": "105230",
+      "daily_change_price": 0.42,
+      "low": null,
+      "high": null,
+      "timestamp": 1761550530.189
+    }
+  ]
+}

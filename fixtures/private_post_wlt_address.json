@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "body": {
+    "currency": "USDT",
+    "network": 2,
+    "address": "TTestAddressDoNotUse000000000000000",
+    "memo": "",
+    "is_multi_format_address": false,
+    "address2": ""
+  }
+}

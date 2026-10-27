@@ -1,0 +1,29 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "network": {
+        "code": "TRX",
+        "title": "Tron",
+        "title_fa": "ترون",
+        "can_deposit": true,
+        "can_withdraw": true
+      },
+      "deposit_under_maintenance": false,
+      "withdraw_under_maintenance": true
+    },
+    {
+      "network": {
+        "id": 5,
+        "code": "ETH",
+        "title": "Ethereum",
+        "title_fa": "اتریوم",
+        "can_deposit": true,
+        "can_withdraw": true,
+        "address_pattern": "^0x[a-fA-F0-9]{40}$"
+      },
+      "deposit_under_maintenance": false,
+      "withdraw_under_maintenance": false
+    }
+  ]
+}

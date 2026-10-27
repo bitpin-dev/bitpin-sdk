@@ -1,0 +1,29 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": 9001,
+      "currency": "USDT",
+      "has_reward": false,
+      "cause": "deposit",
+      "amount": "250.5",
+      "state": "succeed",
+      "service": "main",
+      "wallet_transfer": false,
+      "account_number": null,
+      "referrer_id": "",
+      "tx_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "tx_url": "https://tronscan.org/#/transaction/0000",
+      "created_at": "2026-10-26T09:00:00+03:30",
+      "network": {
+        "code": "TRX",
+        "title": "Tron"
+      },
+      "internal": false,
+      "cause_fa": "واریز",
+      "description": "",
+      "short_description": null,
+      "deposit_method": "crypto"
+    }
+  ]
+}
