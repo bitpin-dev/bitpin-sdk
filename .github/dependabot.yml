@@ -24,3 +24,7 @@ updates:
     directory: /docs
     schedule: { interval: weekly }
     commit-message: { prefix: build, include: scope }
+  - package-ecosystem: gomod
+    directory: /go
+    schedule: { interval: weekly }
+    commit-message: { prefix: build, include: scope }
