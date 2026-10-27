@@ -97,7 +97,8 @@ def test_dependabot_prefixes_pass_the_pr_title_check() -> None:
     import yaml
 
     dependabot = yaml.safe_load((ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8"))
-    workflow = yaml.safe_load((ROOT / ".github" / "workflows" / "pr-title.yml").read_text(encoding="utf-8"))
+    workflow_path = ROOT / ".github" / "workflows" / "pr-title.yml"
+    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
     types = workflow["jobs"]["conventional"]["steps"][0]["with"]["types"].split()
     for update in dependabot["updates"]:
         assert update["commit-message"]["prefix"] in types, update["package-ecosystem"]
