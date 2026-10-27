@@ -149,3 +149,9 @@ def test_expire_access_ignores_a_stale_token() -> None:
     assert state.action() == "ok"
     state.expire_access(state.access_token)
     assert state.action() == "refresh"
+
+
+def test_jwt_exp_rejects_non_finite_values() -> None:
+    for raw in ('{"exp": NaN}', '{"exp": Infinity}', '{"exp": -Infinity}'):
+        payload = base64.urlsafe_b64encode(raw.encode()).rstrip(b"=").decode()
+        assert jwt_exp(f"e30.{payload}.sig") is None

@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -37,7 +38,7 @@ def jwt_exp(token: str) -> float | None:
     except (binascii.Error, ValueError):
         return None
     exp = claims.get("exp") if isinstance(claims, dict) else None
-    if isinstance(exp, (int, float)) and not isinstance(exp, bool):
+    if isinstance(exp, (int, float)) and not isinstance(exp, bool) and math.isfinite(exp):
         return float(exp)
     return None
 

@@ -116,10 +116,13 @@ class Bitpin:
 
     def close(self) -> None:
         """Close the WebSocket and the HTTP connection pool (if the client created it)."""
-        if self._ws is not None:
-            self._ws.close()
-        if self._owns_http:
-            self._http.close()
+        ws, self._ws = self._ws, None
+        try:
+            if ws is not None:
+                ws.close()
+        finally:
+            if self._owns_http:
+                self._http.close()
 
     def describe(self) -> dict[str, Any]:
         """ccxt-style description: urls, capabilities, timeframes and effective rate limits."""
@@ -378,6 +381,8 @@ class Bitpin:
                 f"timeframe {timeframe!r} is not supported; use one of {', '.join(TIMEFRAMES)}"
             )
         step = TIMEFRAMES[timeframe]
+        if limit is not None and limit < 1:
+            raise errors.BadRequest("fetch_ohlcv limit must be at least 1")
         count = limit or _DEFAULT_OHLCV_LIMIT
         if count > CONSTANTS["candles_max_per_request"]:
             raise errors.BadRequest(
@@ -860,7 +865,12 @@ def order_body(
         raise errors.InvalidOrder(f"order type must be one of {', '.join(_ORDER_TYPES)}")
     if side not in ("buy", "sell"):
         raise errors.InvalidOrder("order side must be 'buy' or 'sell'")
-    extra = {_PARAM_ALIASES.get(k, k): v for k, v in (params or {}).items()}
+    extra: dict[str, Any] = {}
+    for key, value in (params or {}).items():
+        name = _PARAM_ALIASES.get(key, key)
+        if name in extra and extra[name] != value:
+            raise errors.InvalidOrder(f"params set {name} twice ({key!r}); pass only one of both")
+        extra[name] = value
     body: dict[str, Any] = {"symbol": to_market_id(symbol), "type": type, "side": side}
     if amount is not None:
         body["base_amount"] = amount
@@ -869,6 +879,9 @@ def order_body(
     body.update({k: v for k, v in extra.items() if v is not None})
     _positive("amount", body.get("base_amount"))
     _positive("price", body.get("price"))
+    _positive("params['stopPrice']", body.get("stop_price"))
+    _positive("params['takeProfitPrice']", body.get("oco_target_price"))
+    _positive("params['quoteAmount']", body.get("quote_amount"))
 
     if type == "market":
         if "base_amount" in body and "quote_amount" in body:
