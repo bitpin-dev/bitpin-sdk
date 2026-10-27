@@ -127,3 +127,46 @@ def test_token_store_is_carried_and_not_compared(tmp_path: Path) -> None:
     assert config.token_store is store
     assert config == Config()
     assert "token_store" not in repr(config)
+
+
+@pytest.mark.parametrize(
+    ("domain", "rest", "ws"),
+    [
+        ("org", "https://api.bitpin.org", "wss://centrifugo.bitpin.org/connection/websocket"),
+        ("ir", "https://api.bitpin.ir", "wss://centrifugo.bitpin.ir/connection/websocket"),
+        (
+            "market",
+            "https://api.bitpin.market",
+            "wss://centrifugo.bitpin.market/connection/websocket",
+        ),
+    ],
+)
+def test_domain_selects_rest_and_ws_urls(domain: str, rest: str, ws: str) -> None:
+    config = Config(domain=domain)  # type: ignore[arg-type]
+    assert (config.domain, config.rest_url, config.ws_url) == (domain, rest, ws)
+
+
+def test_default_domain_is_org() -> None:
+    assert Config().domain == "org"
+
+
+def test_explicit_urls_win_over_the_domain() -> None:
+    config = Config(domain="ir", rest_url="https://proxy.example/bitpin")
+    assert config.rest_url == "https://proxy.example/bitpin"
+    assert config.ws_url == "wss://centrifugo.bitpin.ir/connection/websocket"
+
+
+def test_unknown_domain_raises() -> None:
+    with pytest.raises(ValueError, match="unknown domain 'com'; use one of: ir, market, org"):
+        Config(domain="com")  # type: ignore[arg-type]
+
+
+def test_domain_from_ccxt_file_and_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    assert (
+        Config.from_ccxt({"options": {"domain": "market"}}).rest_url == "https://api.bitpin.market"
+    )
+    path = tmp_path / "bitpin.toml"
+    path.write_text('[bitpin]\ndomain = "ir"\n', encoding="utf-8")
+    assert Config.from_file(path).rest_url == "https://api.bitpin.ir"
+    monkeypatch.setenv("BITPIN_DOMAIN", "market")
+    assert Config.from_env().domain == "market"

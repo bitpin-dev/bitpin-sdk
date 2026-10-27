@@ -27,6 +27,25 @@ export const URLS = {
   "ws": "wss://centrifugo.bitpin.org/connection/websocket"
 } as const;
 
+export const DOMAINS = {
+  "ir": {
+    "rest": "https://api.bitpin.ir",
+    "ws": "wss://centrifugo.bitpin.ir/connection/websocket"
+  },
+  "market": {
+    "rest": "https://api.bitpin.market",
+    "ws": "wss://centrifugo.bitpin.market/connection/websocket"
+  },
+  "org": {
+    "rest": "https://api.bitpin.org",
+    "ws": "wss://centrifugo.bitpin.org/connection/websocket"
+  }
+} as const;
+
+export type Domain = keyof typeof DOMAINS;
+
+export const DEFAULT_DOMAIN: Domain = "org";
+
 export const CONSTANTS = {
   "access_token_ttl_seconds": 900,
   "bulk_orders_max": 10,

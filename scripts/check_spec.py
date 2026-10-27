@@ -20,6 +20,9 @@ def main() -> int:
     except jsonschema.ValidationError as exc:
         print(f"spec/bitpin.yaml is invalid: {exc.message} at {list(exc.absolute_path)}")
         return 1
+    if spec["default_domain"] not in spec["domains"]:
+        print(f"default_domain {spec['default_domain']!r} is not one of the domains")
+        return 1
     print(f"spec ok: {len(spec['endpoints'])} endpoints, {len(spec['rate_limits'])} rate-limit buckets")
     return 0
 

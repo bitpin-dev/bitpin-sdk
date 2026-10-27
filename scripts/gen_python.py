@@ -58,6 +58,8 @@ def _table(name: str, annotation: str, value: Any) -> str:
 def render(spec: dict[str, Any]) -> str:
     parts = [HEADER]
     parts.append(_table("URLS", "dict[str, str]", spec["urls"]))
+    parts.append(_table("DOMAINS", "dict[str, dict[str, str]]", spec["domains"]))
+    parts.append(f"DEFAULT_DOMAIN = {spec['default_domain']!r}\n\n")
     parts.append(_table("CONSTANTS", "dict[str, int]", spec["constants"]))
     rate_limits = {k: (v["limit"], v["period"]) for k, v in spec["rate_limits"].items()}
     parts.append(_table("RATE_LIMITS", "dict[str, tuple[int, Period]]", rate_limits))

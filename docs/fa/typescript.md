@@ -17,7 +17,13 @@ const order = await client.createOrder("USDT/IRT", "limit", "buy", "10", "90000"
 await client.cancelOrderByIdentifier("bot-1");
 ```
 
-`new Bitpin()` بدون تنظیمات، `BITPIN_API_KEY` و `BITPIN_SECRET_KEY` را از متغیرهای محیطی می‌خواند.
+`new Bitpin()` بدون تنظیمات، `BITPIN_API_KEY`، `BITPIN_SECRET_KEY` و `BITPIN_DOMAIN` را از متغیرهای محیطی می‌خواند.
+
+## نسخه‌های پشتیبانی‌شده
+
+- **محیط اجرا:** Node.js نسخهٔ ۲۲ یا بالاتر (`"engines"` در `package.json`)، آزموده‌شده روی Node ۲۲، ۲۴ و ۲۶. Bun و Deno هم کار می‌کنند.
+- **تایپ‌ها:** فایل‌های تعریف نوع با TypeScript ۵٫۰ یا بالاتر کار می‌کنند؛ خود SDK با TypeScript ۷ ساخته می‌شود.
+- **مشارکت‌کنندگان:** از نسخهٔ Node در `ts/.nvmrc` استفاده کنید (nvm، fnm، mise و Volta آن را می‌خوانند). `devEngines` در `package.json` باعث می‌شود npm با Node قدیمی‌تر از ۲۲ یا npm قدیمی‌تر از ۱۰٫۹ کار نکند.
 
 ## تفاوت با پایتون
 
@@ -51,6 +57,7 @@ await client.cancelOrderByIdentifier("bot-1");
 const client = new Bitpin({
   apiKey: "...",
   secretKey: "...",            // یا `secret`، مثل ccxt
+  domain: "org",               // "org" (پیش‌فرض)، "ir" یا "market"؛ REST و وب‌سوکت با هم عوض می‌شوند
   timeout: 10_000,             // میلی‌ثانیه
   maxRetries: 3,               // فقط برای درخواست‌های تکرارپذیر
   rateLimits: { orderbook: "10800/min" },

@@ -1,5 +1,11 @@
 // Client configuration. Defaults come from spec/bitpin.yaml; every value can be overridden.
-import { type Period, RATE_LIMITS, URLS } from "./generated/spec.js";
+import {
+  DEFAULT_DOMAIN,
+  DOMAINS,
+  type Domain,
+  type Period,
+  RATE_LIMITS,
+} from "./generated/spec.js";
 import type { TokenStore } from "./tokenStore.js";
 
 const PERIOD_SECONDS: Record<Period, number> = { sec: 1, min: 60, hour: 3600, day: 86400 };
@@ -38,6 +44,9 @@ export interface BitpinOptions {
   /** Secret key (`secret` also works, as in ccxt). */
   secretKey?: string;
   secret?: string;
+  /** API domain: "org" (default), "ir" or "market". REST and WebSocket switch together. */
+  domain?: Domain;
+  /** Explicit REST base URL; wins over `domain`. */
   restUrl?: string;
   wsUrl?: string;
   /** Milliseconds per request, as in ccxt JS. Default 10 000. */
@@ -61,6 +70,7 @@ export interface BitpinOptions {
 export interface ResolvedConfig {
   readonly apiKey: string | null;
   readonly secretKey: string | null;
+  readonly domain: Domain;
   readonly restUrl: string;
   readonly wsUrl: string;
   readonly timeout: number;
@@ -86,6 +96,12 @@ export function resolveConfig(
     }
     overrides[name] = RateLimit.parse(value);
   }
+  const domain = (options.domain ?? env.BITPIN_DOMAIN ?? DEFAULT_DOMAIN) as Domain;
+  if (!(domain in DOMAINS)) {
+    throw new Error(
+      `unknown domain '${domain}'; use one of: ${Object.keys(DOMAINS).sort().join(", ")}`,
+    );
+  }
   const maxRetries = options.maxRetries ?? 3;
   if (maxRetries < 0) throw new Error("maxRetries must be >= 0");
   const apiKey = options.apiKey ?? env.BITPIN_API_KEY ?? null;
@@ -100,8 +116,9 @@ export function resolveConfig(
   const config: ResolvedConfig = {
     apiKey,
     secretKey,
-    restUrl: options.restUrl ?? URLS.rest,
-    wsUrl: options.wsUrl ?? URLS.ws,
+    domain,
+    restUrl: options.restUrl ?? DOMAINS[domain].rest,
+    wsUrl: options.wsUrl ?? DOMAINS[domain].ws,
     timeout: options.timeout ?? 10_000,
     maxRetries,
     enableRateLimit: options.enableRateLimit ?? true,
