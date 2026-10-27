@@ -393,3 +393,18 @@ async def test_credentials_are_not_reachable_through_exception_chaining(
         await call(client.private_get_wlt_wallets())
     assert info.value.__cause__ is None
     assert info.value.__suppress_context__ is True
+
+
+async def test_key_id_is_derived_once_per_client(
+    client: Any, mock: respx.MockRouter, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import bitpin_sdk._async.client as async_client
+    import bitpin_sdk._sync.client as sync_client
+
+    calls: list[str] = []
+    for module in (async_client, sync_client):
+        monkeypatch.setattr(module, "key_id", lambda key: calls.append(key) or "kid")
+    route(mock, "private_get_wlt_wallets")
+    for _ in range(3):
+        await call(client.private_get_wlt_wallets())
+    assert len(calls) == 1

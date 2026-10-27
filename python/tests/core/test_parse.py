@@ -16,6 +16,7 @@ def test_parse_iso_datetime_to_ms() -> None:
     assert parse.iso_to_ms("2026-10-27T10:15:30.123456+03:30") == T_ORDER
     assert parse.iso_to_ms("2025-10-19T11:38:27.929164Z") == 1760873907929
     assert parse.iso_to_ms("2026-10-27T10:20:00.5+03:30") == 1793083800500
+    assert parse.iso_to_ms("2026-10-27T10:20:00.1234567+03:30") == 1793083800123
     assert parse.iso_to_ms(None) is None
     assert parse.iso_to_ms("garbage") is None
 
