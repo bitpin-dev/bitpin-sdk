@@ -60,7 +60,6 @@ type route struct {
 	method, path string
 	prefix       bool
 	replies      []reply
-	fn           func(call) reply
 	mu           sync.Mutex
 	calls        []call
 }
@@ -80,12 +79,6 @@ func (m *mockHTTP) on(method, path string, replies ...reply) *route {
 	m.mu.Lock()
 	m.routes = append([]*route{r}, m.routes...)
 	m.mu.Unlock()
-	return r
-}
-
-func (m *mockHTTP) onFunc(method, path string, fn func(call) reply) *route {
-	r := m.on(method, path)
-	r.fn = fn
 	return r
 }
 
@@ -133,14 +126,9 @@ func (m *mockHTTP) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 	match.mu.Lock()
 	match.calls = append(match.calls, c)
-	var rep reply
-	if match.fn != nil {
-		rep = match.fn(c)
-	} else {
-		rep = match.replies[0]
-		if len(match.replies) > 1 {
-			match.replies = match.replies[1:]
-		}
+	rep := match.replies[0]
+	if len(match.replies) > 1 {
+		match.replies = match.replies[1:]
 	}
 	match.mu.Unlock()
 	if rep.err != nil {
