@@ -32,6 +32,15 @@ URLS: dict[str, str] = {'docs': 'https://docs.bitpin.ir',
  'rest': 'https://api.bitpin.org',
  'ws': 'wss://centrifugo.bitpin.org/connection/websocket'}
 
+DOMAINS: dict[str, dict[str, str]] = {'ir': {'rest': 'https://api.bitpin.ir',
+        'ws': 'wss://centrifugo.bitpin.ir/connection/websocket'},
+ 'market': {'rest': 'https://api.bitpin.market',
+            'ws': 'wss://centrifugo.bitpin.market/connection/websocket'},
+ 'org': {'rest': 'https://api.bitpin.org',
+         'ws': 'wss://centrifugo.bitpin.org/connection/websocket'}}
+
+DEFAULT_DOMAIN = 'org'
+
 CONSTANTS: dict[str, int] = {'access_token_ttl_seconds': 900,
  'bulk_orders_max': 10,
  'candles_max_per_request': 10000,

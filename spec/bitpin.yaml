@@ -16,6 +16,20 @@ urls:
   ws: wss://centrifugo.bitpin.org/connection/websocket
   docs: https://docs.bitpin.ir
 
+# Bitpin serves the same API on three domains; REST and WebSocket switch together.
+# Clients default to `org` and let users pick another (or set explicit URLs).
+domains:
+  org:
+    rest: https://api.bitpin.org
+    ws: wss://centrifugo.bitpin.org/connection/websocket
+  ir:
+    rest: https://api.bitpin.ir
+    ws: wss://centrifugo.bitpin.ir/connection/websocket
+  market:
+    rest: https://api.bitpin.market
+    ws: wss://centrifugo.bitpin.market/connection/websocket
+default_domain: org
+
 constants:
   access_token_ttl_seconds: 900
   refresh_token_ttl_seconds: 2592000

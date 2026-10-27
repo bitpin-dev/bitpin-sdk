@@ -403,3 +403,29 @@ describe("request building", () => {
     ).toEqual([{ price: "1.5" }]);
   });
 });
+
+describe("domains", () => {
+  it.each([
+    ["org", "https://api.bitpin.org", "wss://centrifugo.bitpin.org/connection/websocket"],
+    ["ir", "https://api.bitpin.ir", "wss://centrifugo.bitpin.ir/connection/websocket"],
+    ["market", "https://api.bitpin.market", "wss://centrifugo.bitpin.market/connection/websocket"],
+  ] as const)("%s selects REST and WebSocket", (domain, rest, ws) => {
+    const config = resolveConfig({ domain });
+    expect([config.domain, config.restUrl, config.wsUrl]).toEqual([domain, rest, ws]);
+  });
+
+  it("defaults to org, lets explicit URLs win, reads BITPIN_DOMAIN, rejects unknown", () => {
+    expect(resolveConfig({}).domain).toBe("org");
+    const custom = resolveConfig({ domain: "ir", restUrl: "https://proxy.example/bitpin" });
+    expect([custom.restUrl, custom.wsUrl]).toEqual([
+      "https://proxy.example/bitpin",
+      "wss://centrifugo.bitpin.ir/connection/websocket",
+    ]);
+    expect(resolveConfig({}, { BITPIN_DOMAIN: "market" }).restUrl).toBe(
+      "https://api.bitpin.market",
+    );
+    expect(() => resolveConfig({ domain: "com" as never })).toThrow(
+      "unknown domain 'com'; use one of: ir, market, org",
+    );
+  });
+});

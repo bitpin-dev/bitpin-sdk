@@ -17,7 +17,13 @@ const order = await client.createOrder("USDT/IRT", "limit", "buy", "10", "90000"
 await client.cancelOrderByIdentifier("bot-1");
 ```
 
-Without options, `new Bitpin()` reads `BITPIN_API_KEY` and `BITPIN_SECRET_KEY` from the environment.
+Without options, `new Bitpin()` reads `BITPIN_API_KEY`, `BITPIN_SECRET_KEY` and `BITPIN_DOMAIN` from the environment.
+
+## Supported versions
+
+- **Runtime:** Node.js 22 or newer (`"engines"` in `package.json`), tested on Node 22, 24 and 26. Bun and Deno also work.
+- **Types:** the declarations work with TypeScript 5.0 or newer; the SDK itself is built with TypeScript 7.
+- **Contributors:** use the Node version in `ts/.nvmrc` (nvm, fnm, mise and Volta read it). `devEngines` in `package.json` makes npm refuse Node older than 22 or npm older than 10.9.
 
 ## Differences from Python
 
@@ -51,6 +57,7 @@ Arguments, limits and results are the same as on the [market data](market-data.m
 const client = new Bitpin({
   apiKey: "...",
   secretKey: "...",            // or `secret`, as in ccxt
+  domain: "org",               // "org" (default), "ir" or "market"; REST and WebSocket switch together
   timeout: 10_000,             // ms
   maxRetries: 3,               // idempotent requests only
   rateLimits: { orderbook: "10800/min" },

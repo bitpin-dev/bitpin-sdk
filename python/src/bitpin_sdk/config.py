@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from bitpin_sdk._generated.spec import RATE_LIMITS, URLS
+from bitpin_sdk._generated.spec import DEFAULT_DOMAIN, DOMAINS, RATE_LIMITS
 from bitpin_sdk.token_store import TokenStore
 
 if sys.version_info >= (3, 11):
@@ -19,6 +19,7 @@ else:  # pragma: no cover - exercised only on Python 3.10
     import tomli as tomllib
 
 Period = Literal["sec", "min", "hour", "day"]
+Domain = Literal["org", "ir", "market"]
 _PERIOD_SECONDS: dict[str, int] = {"sec": 1, "min": 60, "hour": 3600, "day": 86400}
 
 
@@ -70,8 +71,9 @@ class Config:
 
     api_key: str | None = field(default=None, repr=False)
     secret_key: str | None = field(default=None, repr=False)
-    rest_url: str = URLS["rest"]
-    ws_url: str = URLS["ws"]
+    domain: Domain = DEFAULT_DOMAIN  # type: ignore[assignment]
+    rest_url: str = ""  # default: the domain's REST URL
+    ws_url: str = ""  # default: the domain's WebSocket URL
     timeout: float = 10.0
     max_retries: int = 3
     enable_rate_limit: bool = True
@@ -80,6 +82,11 @@ class Config:
     token_store: TokenStore | None = field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
+        if self.domain not in DOMAINS:
+            known = ", ".join(sorted(DOMAINS))
+            raise ValueError(f"unknown domain {self.domain!r}; use one of: {known}")
+        object.__setattr__(self, "rest_url", self.rest_url or DOMAINS[self.domain]["rest"])
+        object.__setattr__(self, "ws_url", self.ws_url or DOMAINS[self.domain]["ws"])
         object.__setattr__(self, "rate_limits", _normalize_rate_limits(self.rate_limits))
         object.__setattr__(self, "timeout", float(self.timeout))
         if self.max_retries < 0:
@@ -138,6 +145,8 @@ class Config:
         if "userAgent" in options:
             kwargs["user_agent"] = options["userAgent"]
         extra = options.get("options") or {}
+        if "domain" in extra:
+            kwargs["domain"] = extra["domain"]
         if "rateLimits" in extra:
             kwargs["rate_limits"] = extra["rateLimits"]
         return cls(**kwargs)
@@ -151,12 +160,15 @@ class Config:
 
     @classmethod
     def from_env(cls, **overrides: Any) -> Config:
-        """Read ``BITPIN_API_KEY`` and ``BITPIN_SECRET_KEY``; keyword arguments set the rest."""
-        return cls(
-            api_key=os.environ.get("BITPIN_API_KEY"),
-            secret_key=os.environ.get("BITPIN_SECRET_KEY"),
-            **overrides,
-        )
+        """Read ``BITPIN_API_KEY``, ``BITPIN_SECRET_KEY`` and ``BITPIN_DOMAIN``; keyword
+        arguments set the rest."""
+        env: dict[str, Any] = {
+            "api_key": os.environ.get("BITPIN_API_KEY"),
+            "secret_key": os.environ.get("BITPIN_SECRET_KEY"),
+        }
+        if os.environ.get("BITPIN_DOMAIN"):
+            env["domain"] = os.environ["BITPIN_DOMAIN"]
+        return cls(**{**env, **overrides})
 
     @classmethod
     def coerce(cls, value: Config | Mapping[str, Any] | None) -> Config:

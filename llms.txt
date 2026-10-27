@@ -4,7 +4,7 @@
 
 Install: `pip install bitpin-sdk` (WebSocket: `pip install "bitpin-sdk[ws]"`). Python 3.10+.
 
-Construct: `Bitpin({"apiKey": KEY, "secret": SECRET})`, `Bitpin(Config.from_env())` (BITPIN_API_KEY, BITPIN_SECRET_KEY), or `Config(api_key=..., secret_key=..., rate_limits={"orderbook": "10800/min"})`. Use as a context manager or call `close()`. Symbols: `"BTC/IRT"` (also `"BTC_IRT"`).
+Construct: `Bitpin({"apiKey": KEY, "secret": SECRET})`, `Bitpin(Config.from_env())` (BITPIN_API_KEY, BITPIN_SECRET_KEY), or `Config(api_key=..., secret_key=..., rate_limits={"orderbook": "10800/min"})`. Use as a context manager or call `close()`. Symbols: `"BTC/IRT"` (also `"BTC_IRT"`). Domain: `Config(domain="org" | "ir" | "market")` (default `org`; REST and WebSocket switch together; env `BITPIN_DOMAIN`).
 
 Rules an agent must follow:
 - Never retry create_order, create_orders, cancel, withdraw or OTP calls blindly; on NetworkError look the order up by `clientOrderId` first.

@@ -7,6 +7,7 @@
  */
 export { Bitpin, type OrderRequest, type Params, TIMEFRAMES } from "./client.js";
 export { type BitpinOptions, RateLimit, type ResolvedConfig } from "./config.js";
+export type { Domain } from "./generated/spec.js";
 export type { Tokens } from "./core/auth.js";
 export { Decimal, type Numeric } from "./core/numbers.js";
 export * as errors from "./errors.js";

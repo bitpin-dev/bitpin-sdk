@@ -80,6 +80,12 @@ export interface ErrorRule {{
 
 export const URLS = {literal(spec["urls"])} as const;
 
+export const DOMAINS = {literal(spec["domains"])} as const;
+
+export type Domain = keyof typeof DOMAINS;
+
+export const DEFAULT_DOMAIN: Domain = {json.dumps(spec["default_domain"])};
+
 export const CONSTANTS = {literal(spec["constants"])} as const;
 
 export const RATE_LIMITS: Readonly<Record<string, readonly [number, Period]>> = {literal(rate_limits)};
