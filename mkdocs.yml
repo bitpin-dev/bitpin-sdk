@@ -57,6 +57,7 @@ plugins:
             Not available yet: فعلاً موجود نیست
             Migrating from ccxt: مهاجرت از ccxt
             TypeScript: تایپ‌اسکریپت
+            Go: Go
             FAQ: پرسش‌های رایج
 
 nav:
@@ -73,4 +74,5 @@ nav:
   - Not available yet: not-supported.md
   - Migrating from ccxt: migrating-from-ccxt.md
   - TypeScript: typescript.md
+  - Go: go.md
   - FAQ: faq.md

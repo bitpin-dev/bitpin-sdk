@@ -46,6 +46,15 @@ def ts_methods() -> list[str]:
                                 "toString", "toJSON"})
 
 
+def go_methods() -> list[str]:
+    """Exported methods of the Go client, read from its source."""
+    names: set[str] = set()
+    for name in ("client.go", "ws.go"):
+        source = (ROOT / "go" / name).read_text(encoding="utf-8")
+        names.update(re.findall(r"^func \(c \*Client\) ([A-Z][A-Za-z]+)\(", source, re.MULTILINE))
+    return sorted(names)
+
+
 def read_dir(path: Path) -> str:
     return "\n".join(p.read_text(encoding="utf-8") for p in sorted(path.glob("*.md")))
 
@@ -74,6 +83,13 @@ def check() -> list[str]:
         for method in ts_methods():
             if f"`{method}" not in text:
                 problems.append(f"docs/{lang}/typescript.md: TypeScript method {method} is not documented")
+
+    for lang in ("en", "fa"):
+        page = ROOT / "docs" / lang / "go.md"
+        text = page.read_text(encoding="utf-8") if page.exists() else ""
+        for method in go_methods():
+            if f"`{method}" not in text:
+                problems.append(f"docs/{lang}/go.md: Go method {method} is not documented")
 
     for lang in ("en", "fa"):
         page = ROOT / "docs" / lang / "rate-limits.md"

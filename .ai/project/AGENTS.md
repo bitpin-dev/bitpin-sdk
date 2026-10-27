@@ -1,6 +1,6 @@
 # bitpin-sdk: project instructions
 
-A monorepo of hand-written SDKs for Bitpin's public API, one per language, all generated from and tested against one spec: Python (`python/`) and TypeScript (`ts/`); Go joins under `go/`.
+A monorepo of hand-written SDKs for Bitpin's public API, one per language, all generated from and tested against one spec: Python (`python/`), TypeScript (`ts/`) and Go (`go/`).
 
 ## Layout
 
@@ -17,6 +17,10 @@ ts/src/
   generated/spec.ts  from spec by scripts/gen_ts.py (generated)
   core/              pure logic: requests, parsers, errors, auth state, limiter
   client.ts          Bitpin (async), ws/ for WebSocket
+go/                  module github.com/bitpin-dev/bitpin-sdk/go, package bitpin
+  spec_gen.go        from spec by scripts/gen_go.py (generated)
+  client.go, ws.go   Client; parse.go, request.go, errors.go, ratelimit.go, auth.go, tokenstore.go
+  examples/          quickstart, marketmaker (dry-run unless -live)
 docs/en, docs/fa     the docs site; every page exists in both languages
 examples/{python,ts}/ runnable examples, dry-run unless --live
 ```
@@ -49,7 +53,15 @@ npm run build                                  # tsup (JS) + tsc (declarations)
 cd ../python && uv run python ../scripts/gen_ts.py   # after editing spec/bitpin.yaml
 ```
 
-Live, read-only suites (need `BITPIN_LIVE=1`, never in CI, see issue #4): `uv run pytest -m live`, `npm run test:live`.
+Go, from `go/` (Go ≥ 1.26; set `GOTOOLCHAIN=local` where proxy.golang.org is blocked):
+
+```bash
+go test -race -cover ./...                     # gate: 90 % statements
+gofmt -l . && go vet ./... && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+cd ../python && uv run python ../scripts/gen_go.py   # after editing spec/bitpin.yaml (needs gofmt)
+```
+
+Live, read-only suites (need `BITPIN_LIVE=1`, never in CI, see issue #4): `uv run pytest -m live`, `npm run test:live`, `go test -tags live -run Live ./...`.
 
 Each generator has `--check`; CI runs them all, so a stale generated file fails the build.
 
@@ -57,7 +69,7 @@ Each generator has `--check`; CI runs them all, so a stale generated file fails 
 
 - Unified methods use ccxt names, arguments and result structures. Bitpin-only methods get plain names (`fetch_order_history`, `verify_withdraw_otp`).
 - Numbers are `Decimal` end to end; requests carry plain decimal strings.
-- Python client logic lives in `_async/client.py` only; regenerate `_sync/`. TypeScript mirrors the same behaviour in `ts/src/client.ts`; a behaviour change lands in both, with tests in both.
+- Python client logic lives in `_async/client.py` only; regenerate `_sync/`. TypeScript (`ts/src/client.ts`) and Go (`go/client.go`) mirror the same behaviour; a behaviour change lands in all three, with tests in all three.
 - Anything Bitpin lacks is a `has: false` entry with an en+fa message in the spec, plus a method raising `not_supported(...)`.
 - Conventional Commits; PR titles are checked. Scopes: `python`, `ts`, `go`, `spec`, `docs`, `ci`, `examples`.
 - English for code, comments and commits; user docs in English and Persian.
@@ -78,6 +90,7 @@ Read the rule that matches your task before editing:
 | `.ai/project/rules/spec.md` | changing `spec/`, `fixtures/`, endpoints, limits or errors |
 | `.ai/project/rules/python.md` | changing `python/` |
 | `.ai/project/rules/typescript.md` | changing `ts/` or `examples/ts/` |
+| `.ai/project/rules/go.md` | changing `go/` |
 | `.ai/project/rules/testing.md` | writing or changing tests |
 | `.ai/project/rules/docs.md` | changing `docs/`, READMEs, `llms.txt` or examples |
 | `.ai/project/rules/security.md` | touching auth, tokens, withdrawals, logging, dependencies or CI |

@@ -22,6 +22,8 @@ jobs:
       python-tag: ${{ steps.release.outputs['python--tag_name'] }}
       ts-released: ${{ steps.release.outputs['ts--release_created'] }}
       ts-tag: ${{ steps.release.outputs['ts--tag_name'] }}
+      go-released: ${{ steps.release.outputs['go--release_created'] }}
+      go-tag: ${{ steps.release.outputs['go--tag_name'] }}
     steps:
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
@@ -119,3 +121,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.release-please.outputs.ts-tag }}
         run: gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY"
+
+  announce-go:
+    # Go modules have nothing to upload: the go/vX.Y.Z tag is the release. Asking the module
+    # proxy for it makes pkg.go.dev and `go get @latest` see it right away.
+    needs: release-please
+    if: needs.release-please.outputs.go-released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          TAG: ${{ needs.release-please.outputs.go-tag }}
+        run: |
+          version="${TAG#go/}"
+          curl -fsS "https://proxy.golang.org/github.com/bitpin-dev/bitpin-sdk/go/@v/${version}.info"

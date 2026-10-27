@@ -69,6 +69,19 @@
           "path": "src/version.ts"
         }
       ]
+    },
+    "go": {
+      "release-type": "go",
+      "package-name": "github.com/bitpin-dev/bitpin-sdk/go",
+      "component": "go",
+      "tag-separator": "/",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "doc.go"
+        }
+      ]
     }
   }
 }

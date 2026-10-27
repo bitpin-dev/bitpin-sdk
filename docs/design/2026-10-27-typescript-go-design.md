@@ -24,7 +24,7 @@ Everything in the main design holds: one spec (`spec/bitpin.yaml`), one set of f
 
 ## Go (`go/`, module `github.com/bitpin-dev/bitpin-sdk/go`)
 
-- **Go ≥ 1.24.** Package `bitpin`.
+- **Go ≥ 1.26** (the newest `centrifuge-go` needs it), `toolchain go1.27.3` in `go.mod` so `go` fetches the pinned toolchain the way uv does for Python. Where proxy.golang.org is blocked (it returns 403 from Iran), use `GOTOOLCHAIN=local` with a local Go ≥ 1.26. Package `bitpin`.
 - **API:** `bitpin.New(bitpin.Config{...})` returns `*Client`. Every call takes a `context.Context` first and returns `(T, error)`, the Go way; names are ccxt's in Go case: `FetchTicker`, `CreateOrder`, `WatchOrderBook`. Optional ccxt arguments become option structs (`FetchOrdersOptions{Symbol, Since, Limit, Params}`).
 - **Results:** typed structs with ccxt field names (`Order.ClientOrderID`, `Order.Filled`, …) and the raw response in `Info map[string]any`.
 - **Numbers:** `github.com/shopspring/decimal`.
