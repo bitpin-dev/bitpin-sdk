@@ -61,6 +61,7 @@ def test_parse_ticker() -> None:
     assert t["high"] == D("3200000000")
     assert t["low"] == D("3100000000")
     assert t["percentage"] == D("-1.58")
+    assert t["change"] is None
     assert t["timestamp"] == 1761550530189
     assert t["datetime"] == "2025-10-27T07:35:30.189Z"
     assert t["baseVolume"] is None
