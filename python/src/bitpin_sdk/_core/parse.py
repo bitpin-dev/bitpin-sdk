@@ -124,6 +124,12 @@ def parse_currency(raw: Mapping[str, Any]) -> Currency:
     }
 
 
+def ratio_to_percent(value: Any) -> Decimal | None:
+    """Bitpin reports 24h change as a ratio (``-0.0158``); ccxt ``percentage`` is ``-1.58``."""
+    ratio = _dec(value)
+    return None if ratio is None else ratio * _HUNDRED
+
+
 def parse_ticker(raw: Mapping[str, Any]) -> Ticker:
     timestamp = seconds_to_ms(raw.get("timestamp"))
     last = _dec(raw.get("price"))
@@ -139,7 +145,7 @@ def parse_ticker(raw: Mapping[str, Any]) -> Ticker:
         "close": last,
         "open": None,
         "change": None,
-        "percentage": _dec(raw.get("daily_change_price")),
+        "percentage": ratio_to_percent(raw.get("daily_change_price")),
         "average": _dec(raw.get("mean")),
         "baseVolume": _dec(raw.get("base_volume")),
         "quoteVolume": _dec(raw.get("quote_volume")),
