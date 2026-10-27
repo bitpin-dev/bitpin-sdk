@@ -36,4 +36,5 @@ jobs:
             ci
             ai
             deps
+            main
           requireScope: false

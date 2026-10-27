@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bitpin-sdk"
-version = "0.1.0"
+dynamic = ["version"]  # from src/bitpin_sdk/__init__.py, so uv.lock never goes stale on a release
 description = "Official Python SDK for the Bitpin exchange API (REST + WebSocket, sync + async)"
 readme = "README.md"
 license = "MIT"
@@ -57,6 +57,9 @@ dev = [
   "unasync>=0.6",
   "centrifuge-python>=0.4,<1",
 ]
+
+[tool.hatch.version]
+path = "src/bitpin_sdk/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bitpin_sdk"]
