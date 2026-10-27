@@ -24,7 +24,9 @@ _KEY_ID = re.compile(r"^[A-Za-z0-9_-]+$")
 
 def key_id(api_key: str) -> str:
     """A stable, non-secret id for an API key, used as the cache key."""
-    return hashlib.sha256(api_key.encode()).hexdigest()[:16]
+    # A slow derivation, so the id can't be used to test guesses of the key quickly.
+    digest = hashlib.pbkdf2_hmac("sha256", api_key.encode(), b"bitpin-sdk/token-store", 100_000)
+    return digest.hex()[:16]
 
 
 class TokenStore(Protocol):
