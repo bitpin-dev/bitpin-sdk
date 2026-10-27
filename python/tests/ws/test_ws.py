@@ -401,3 +401,55 @@ async def test_centrifuge_transport_builds_a_client() -> None:
 
     transport = CentrifugeTransport("wss://example.invalid/connection/websocket", token)
     assert transport._client is not None
+
+
+async def test_watchers_for_different_symbols_each_get_their_updates(
+    ws: BitpinWS, transports: list[FakeTransport]
+) -> None:
+    order = {**body("private_post_odr_orders"), "event": "user_order_update"}
+    btc = asyncio.ensure_future(ws.watch_orders("BTC/IRT"))
+    usdt = asyncio.ensure_future(ws.watch_orders("USDT/IRT"))
+    await settle()
+    transports[0].push("user:order_info#TESTUSR1", {**order, "symbol": "USDT_IRT", "id": 2})
+    transports[0].push("user:order_info#TESTUSR1", {**order, "symbol": "BTC_IRT", "id": 1})
+    assert (await asyncio.wait_for(btc, 1))["id"] == "1"
+    assert (await asyncio.wait_for(usdt, 1))["id"] == "2"
+
+
+async def test_two_timeframes_both_see_every_candle_update(
+    ws: BitpinWS, transports: list[FakeTransport]
+) -> None:
+    candle = {
+        "open": "1",
+        "close": "1",
+        "low": "1",
+        "high": "1",
+        "volume": "1",
+        "ts": "1760871600.0",
+    }
+    one = asyncio.ensure_future(ws.watch_ohlcv("BTC/IRT", "1m"))
+    five = asyncio.ensure_future(ws.watch_ohlcv("BTC/IRT", "5m"))
+    await settle()
+    transports[0].push(
+        "market:BTC_IRT",
+        {
+            "event": "candle_update",
+            "symbol": "BTC_IRT",
+            "candles": [{**candle, "resolution": "1m"}, {**candle, "resolution": "5m"}],
+        },
+    )
+    assert len(await asyncio.wait_for(one, 1)) == 1
+    assert len(await asyncio.wait_for(five, 1)) == 1
+
+
+async def test_events_nobody_watches_are_not_queued(
+    ws: BitpinWS, transports: list[FakeTransport], caplog: pytest.LogCaptureFixture
+) -> None:
+    task = asyncio.ensure_future(ws.watch_ticker("BTC/IRT"))
+    await settle()
+    for _ in range(1500):
+        transports[0].push(
+            "market:BTC_IRT", {"event": "candle_update", "symbol": "BTC_IRT", "candles": []}
+        )
+    assert "dropped" not in caplog.text
+    task.cancel()
