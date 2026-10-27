@@ -38,13 +38,17 @@ def test_endpoints_match_yaml() -> None:
 
 def test_tables_match_yaml() -> None:
     raw = yaml.safe_load((ROOT / "spec" / "bitpin.yaml").read_text(encoding="utf-8"))
-    assert generated.URLS == raw["urls"]
-    assert generated.CONSTANTS == raw["constants"]
-    assert generated.RATE_LIMITS == {k: (v["limit"], v["period"]) for k, v in raw["rate_limits"].items()}
-    assert generated.HAS == raw["has"]
-    assert generated.NOT_SUPPORTED == {k: (v["en"], v["fa"]) for k, v in raw["not_supported"].items()}
-    assert generated.WS_CHANNELS == raw["ws"]["channels"]
-    assert generated.WS_EVENTS == raw["ws"]["events"]
+    assert raw["urls"] == generated.URLS
+    assert raw["constants"] == generated.CONSTANTS
+    assert {
+        k: (v["limit"], v["period"]) for k, v in raw["rate_limits"].items()
+    } == generated.RATE_LIMITS
+    assert raw["has"] == generated.HAS
+    assert {
+        k: (v["en"], v["fa"]) for k, v in raw["not_supported"].items()
+    } == generated.NOT_SUPPORTED
+    assert raw["ws"]["channels"] == generated.WS_CHANNELS
+    assert raw["ws"]["events"] == generated.WS_EVENTS
     assert len(generated.ERROR_RULES) == len(raw["errors"])
     first = generated.ERROR_RULES[0]
     assert (first.status, first.error) == (raw["errors"][0]["status"], raw["errors"][0]["error"])
