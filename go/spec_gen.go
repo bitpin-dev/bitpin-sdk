@@ -155,18 +155,18 @@ var Has = map[string]bool{
 }
 
 var specNotSupported = map[string][2]string{
-	"cancelAllOrders":          {"Bitpin doesn't offer cancel-all yet. Use cancel_orders() with up to 10 ids at a time.", "بیت‌پین فعلاً لغو همهٔ سفارش‌ها را ارائه نمی‌دهد. از cancel_orders() با حداکثر ۱۰ شناسه در هر درخواست استفاده کنید."},
-	"createDepositAddress":     {"Bitpin gives each user one address per network. Use fetch_deposit_address(), which creates it on first use.", "بیت‌پین برای هر کاربر روی هر شبکه یک آدرس می‌دهد. از fetch_deposit_address() استفاده کنید؛ بار اول آدرس را می‌سازد."},
-	"editOrder":                {"Bitpin doesn't support editing orders yet. Cancel the order and place a new one.", "بیت‌پین فعلاً ویرایش سفارش را پشتیبانی نمی‌کند. سفارش را لغو کنید و سفارش جدید ثبت کنید."},
-	"fetchAccounts":            {"Bitpin doesn't offer account or user info through the public API yet.", "بیت‌پین فعلاً اطلاعات حساب کاربری را از طریق API عمومی ارائه نمی‌دهد."},
-	"fetchDepositWithdrawFees": {"Bitpin doesn't offer a deposit/withdraw fee endpoint yet. The fee of a withdrawal is returned when you create it.", "بیت‌پین فعلاً سرویس کارمزد واریز و برداشت ارائه نمی‌دهد. کارمزد هر برداشت هنگام ثبت آن برگردانده می‌شود."},
-	"fetchLedger":              {"Bitpin doesn't offer a ledger endpoint yet. Use fetch_deposits(), fetch_withdrawals() and fetch_my_trades().", "بیت‌پین فعلاً دفتر کل (ledger) ارائه نمی‌دهد. از fetch_deposits()، fetch_withdrawals() و fetch_my_trades() استفاده کنید."},
-	"fetchPositions":           {"Bitpin doesn't offer margin or positions through the public API yet.", "بیت‌پین فعلاً معاملات اهرمی و پوزیشن‌ها را از طریق API عمومی ارائه نمی‌دهد."},
-	"sandbox":                  {"Bitpin has no sandbox or testnet. Every call reaches the real exchange; the examples default to dry-run.", "بیت‌پین محیط آزمایشی (sandbox) ندارد. هر درخواست به صرافی واقعی می‌رسد؛ مثال‌ها به‌صورت پیش‌فرض اجرای آزمایشی دارند."},
-	"setLeverage":              {"Bitpin doesn't offer margin or leverage through the public API yet.", "بیت‌پین فعلاً معاملات اهرمی را از طریق API عمومی ارائه نمی‌دهد."},
-	"transfer":                 {"Bitpin doesn't offer transfers between wallet services through the public API yet.", "بیت‌پین فعلاً انتقال بین سرویس‌های کیف پول را از طریق API عمومی ارائه نمی‌دهد."},
-	"watchBalance":             {"Bitpin doesn't publish balance updates over WebSocket yet. Poll fetch_balance().", "بیت‌پین فعلاً تغییرات موجودی را روی وب‌سوکت منتشر نمی‌کند. از fetch_balance() استفاده کنید."},
-	"watchTickers":             {"Bitpin doesn't document an all-markets ticker channel yet. Use watch_ticker() per symbol or fetch_tickers().", "بیت‌پین فعلاً کانال قیمت همهٔ بازارها را مستند نکرده است. از watch_ticker() برای هر بازار یا fetch_tickers() استفاده کنید."},
+	"cancelAllOrders":          {"Bitpin doesn't offer cancel-all yet. Use cancel_orders() with up to 10 ids at a time.", "بیت\u200cپین فعلاً لغو همهٔ سفارش\u200cها را ارائه نمی\u200cدهد. از cancel_orders() با حداکثر ۱۰ شناسه در هر درخواست استفاده کنید."},
+	"createDepositAddress":     {"Bitpin gives each user one address per network. Use fetch_deposit_address(), which creates it on first use.", "بیت\u200cپین برای هر کاربر روی هر شبکه یک آدرس می\u200cدهد. از fetch_deposit_address() استفاده کنید؛ بار اول آدرس را می\u200cسازد."},
+	"editOrder":                {"Bitpin doesn't support editing orders yet. Cancel the order and place a new one.", "بیت\u200cپین فعلاً ویرایش سفارش را پشتیبانی نمی\u200cکند. سفارش را لغو کنید و سفارش جدید ثبت کنید."},
+	"fetchAccounts":            {"Bitpin doesn't offer account or user info through the public API yet.", "بیت\u200cپین فعلاً اطلاعات حساب کاربری را از طریق API عمومی ارائه نمی\u200cدهد."},
+	"fetchDepositWithdrawFees": {"Bitpin doesn't offer a deposit/withdraw fee endpoint yet. The fee of a withdrawal is returned when you create it.", "بیت\u200cپین فعلاً سرویس کارمزد واریز و برداشت ارائه نمی\u200cدهد. کارمزد هر برداشت هنگام ثبت آن برگردانده می\u200cشود."},
+	"fetchLedger":              {"Bitpin doesn't offer a ledger endpoint yet. Use fetch_deposits(), fetch_withdrawals() and fetch_my_trades().", "بیت\u200cپین فعلاً دفتر کل (ledger) ارائه نمی\u200cدهد. از fetch_deposits()، fetch_withdrawals() و fetch_my_trades() استفاده کنید."},
+	"fetchPositions":           {"Bitpin doesn't offer margin or positions through the public API yet.", "بیت\u200cپین فعلاً معاملات اهرمی و پوزیشن\u200cها را از طریق API عمومی ارائه نمی\u200cدهد."},
+	"sandbox":                  {"Bitpin has no sandbox or testnet. Every call reaches the real exchange; the examples default to dry-run.", "بیت\u200cپین محیط آزمایشی (sandbox) ندارد. هر درخواست به صرافی واقعی می\u200cرسد؛ مثال\u200cها به\u200cصورت پیش\u200cفرض اجرای آزمایشی دارند."},
+	"setLeverage":              {"Bitpin doesn't offer margin or leverage through the public API yet.", "بیت\u200cپین فعلاً معاملات اهرمی را از طریق API عمومی ارائه نمی\u200cدهد."},
+	"transfer":                 {"Bitpin doesn't offer transfers between wallet services through the public API yet.", "بیت\u200cپین فعلاً انتقال بین سرویس\u200cهای کیف پول را از طریق API عمومی ارائه نمی\u200cدهد."},
+	"watchBalance":             {"Bitpin doesn't publish balance updates over WebSocket yet. Poll fetch_balance().", "بیت\u200cپین فعلاً تغییرات موجودی را روی وب\u200cسوکت منتشر نمی\u200cکند. از fetch_balance() استفاده کنید."},
+	"watchTickers":             {"Bitpin doesn't document an all-markets ticker channel yet. Use watch_ticker() per symbol or fetch_tickers().", "بیت\u200cپین فعلاً کانال قیمت همهٔ بازارها را مستند نکرده است. از watch_ticker() برای هر بازار یا fetch_tickers() استفاده کنید."},
 }
 
 var specWSChannels = map[string]string{

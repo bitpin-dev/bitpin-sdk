@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,10 @@ OUT = ROOT / "go" / "spec_gen.go"
 
 
 def go_str(value: str) -> str:
-    return json.dumps(value, ensure_ascii=False)
+    # Persian text keeps its letters, but invisible format characters (e.g. the zero-width
+    # non-joiner U+200C) are written as \u escapes so they're visible in the source.
+    text = json.dumps(value, ensure_ascii=False)
+    return "".join(f"\\u{ord(ch):04x}" if unicodedata.category(ch) == "Cf" else ch for ch in text)
 
 
 def go_strings(values: list[str]) -> str:
