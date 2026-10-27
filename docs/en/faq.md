@@ -13,7 +13,7 @@ No. The server doesn't publish them. Set them with `Config(rate_limits={...})`; 
 Float rounding breaks prices like `0.1 + 0.2`. Market makers need exact values.
 
 **Can I use the sync client with WebSocket?**
-No. `watch_*` needs `AsyncBitpin`. You can use `Bitpin` for REST and run a separate async task for streams.
+Yes. `Bitpin.watch_*` blocks until the next update; the stream runs on one background thread that `close()` stops. Pass `timeout=` to stop waiting.
 
 **An order timed out. Was it placed?**
 Maybe. Orders are never retried automatically. Look it up by `clientOrderId` (see [Errors](errors.md)).

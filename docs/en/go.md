@@ -36,7 +36,7 @@ err = client.CancelOrderByIdentifier(ctx, "bot-1")
 | Errors | exception classes | `errors.Is(err, bitpin.ErrInvalidOrder)` follows the ccxt hierarchy; `errors.As(err, &e)` with `*bitpin.Error` gives `Status`, `Body`, `RetryAfter`, `Code`, `Feature` |
 | Bulk cancel | `cancel_orders(ids=[...])` | `CancelOrders(ctx, ids, nil)` or `CancelOrders(ctx, nil, identifiers)` |
 | Timeouts, cancellation | `timeout` | `Config.Timeout` and the `ctx` you pass |
-| WebSocket | `AsyncBitpin` | built in; `Watch*` blocks until the next update or until `ctx` ends |
+| WebSocket | both clients | built in; `Watch*` blocks until the next update or until `ctx` ends |
 
 ## Methods
 

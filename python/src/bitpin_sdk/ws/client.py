@@ -102,6 +102,7 @@ class BitpinWS:
         event: str,
         key: str = "",
         accept: Callable[[Any], bool] = lambda _: True,
+        timeout: float | None = None,
     ) -> Any:
         queue = self._queue(channel, event, key, accept)
         async with self._lock:
@@ -109,7 +110,10 @@ class BitpinWS:
                 transport = await self._connection()
                 await transport.subscribe(channel, self._on_data(channel))
                 self._channels.add(channel)
-        return await queue.get()
+        try:
+            return await asyncio.wait_for(queue.get(), timeout)
+        except asyncio.TimeoutError:
+            raise errors.RequestTimeout(f"no update on {channel} within {timeout} s") from None
 
     async def _user_channel(self) -> str:
         if not self._client.config.has_credentials:
@@ -131,11 +135,14 @@ class BitpinWS:
 
     # --- public channels -------------------------------------------------------------
 
-    async def watch_ticker(self, symbol: str) -> Ticker:
+    async def watch_ticker(self, symbol: str, timeout: float | None = None) -> Ticker:
         channel = WS_CHANNELS["market"].format(symbol=to_market_id(symbol))
-        return parse.parse_ticker(await self._next(channel, "currency_price_update"))
+        data = await self._next(channel, "currency_price_update", timeout=timeout)
+        return parse.parse_ticker(data)
 
-    async def watch_ohlcv(self, symbol: str, timeframe: str = "1m") -> list[OHLCV]:
+    async def watch_ohlcv(
+        self, symbol: str, timeframe: str = "1m", timeout: float | None = None
+    ) -> list[OHLCV]:
         """The latest candles of ``timeframe`` (Bitpin pushes every 10 s and on trades)."""
         if timeframe not in TIMEFRAMES:
             raise errors.BadRequest(f"timeframe {timeframe!r} is not supported")
@@ -144,31 +151,37 @@ class BitpinWS:
         def accept(data: Any) -> bool:
             return any(c.get("resolution") == timeframe for c in data.get("candles", []))
 
-        data = await self._next(channel, "candle_update", timeframe, accept)
+        data = await self._next(channel, "candle_update", timeframe, accept, timeout)
         return parse.parse_ohlcv(data, timeframe)
 
-    async def watch_order_book(self, symbol: str) -> OrderBook:
+    async def watch_order_book(self, symbol: str, timeout: float | None = None) -> OrderBook:
         channel = WS_CHANNELS["orderbook"].format(symbol=to_market_id(symbol))
-        return parse.parse_order_book(await self._next(channel, "market_data"))
+        return parse.parse_order_book(await self._next(channel, "market_data", timeout=timeout))
 
-    async def watch_trades(self, symbol: str) -> list[Trade]:
+    async def watch_trades(self, symbol: str, timeout: float | None = None) -> list[Trade]:
         channel = WS_CHANNELS["matches"].format(symbol=to_market_id(symbol))
-        return parse.parse_trades(await self._next(channel, "matches_update"))
+        return parse.parse_trades(await self._next(channel, "matches_update", timeout=timeout))
 
     # --- private channel ----------------------------------------------------------------
 
-    async def watch_orders(self, symbol: str | None = None) -> Order:
+    async def watch_orders(self, symbol: str | None = None, timeout: float | None = None) -> Order:
         """The next update of one of your orders (created, filled, cancelled)."""
         channel = await self._user_channel()
         wanted = to_market_id(symbol) if symbol else None
-        data = await self._next(channel, "user_order_update", wanted or "*", _symbol_filter(wanted))
+        data = await self._next(
+            channel, "user_order_update", wanted or "*", _symbol_filter(wanted), timeout
+        )
         return parse.parse_order(data)
 
-    async def watch_my_trades(self, symbol: str | None = None) -> Trade:
+    async def watch_my_trades(
+        self, symbol: str | None = None, timeout: float | None = None
+    ) -> Trade:
         """The next fill of one of your orders."""
         channel = await self._user_channel()
         wanted = to_market_id(symbol) if symbol else None
-        data = await self._next(channel, "user_match_update", wanted or "*", _symbol_filter(wanted))
+        data = await self._next(
+            channel, "user_match_update", wanted or "*", _symbol_filter(wanted), timeout
+        )
         return parse.parse_my_trade(data)
 
 

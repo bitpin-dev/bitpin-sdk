@@ -765,34 +765,44 @@ class Bitpin:
             self._ws = websocket(self, self._ws_factory)
         return self._ws
 
-    def watch_ticker(self, symbol: str) -> Ticker:
-        """Wait for the next 24h ticker update of ``symbol``."""
-        result: Ticker = self._websocket().watch_ticker(symbol)
+    def watch_ticker(self, symbol: str, timeout: float | None = None) -> Ticker:
+        """Wait for the next 24h ticker update of ``symbol``.
+
+        Every ``watch_*`` takes ``timeout`` (seconds) and raises ``RequestTimeout`` when no
+        update arrives in time. The sync ``Bitpin`` runs the stream on a background thread.
+        """
+        result: Ticker = self._websocket().watch_ticker(symbol, timeout=timeout)
         return result
 
-    def watch_ohlcv(self, symbol: str, timeframe: str = "1m") -> list[OHLCV]:
+    def watch_ohlcv(
+        self, symbol: str, timeframe: str = "1m", timeout: float | None = None
+    ) -> list[OHLCV]:
         """Wait for the next candles of ``timeframe``."""
-        result: list[OHLCV] = self._websocket().watch_ohlcv(symbol, timeframe)
+        result: list[OHLCV] = self._websocket().watch_ohlcv(
+            symbol, timeframe, timeout=timeout
+        )
         return result
 
-    def watch_order_book(self, symbol: str) -> OrderBook:
+    def watch_order_book(self, symbol: str, timeout: float | None = None) -> OrderBook:
         """Wait for the next order-book update of ``symbol``."""
-        result: OrderBook = self._websocket().watch_order_book(symbol)
+        result: OrderBook = self._websocket().watch_order_book(symbol, timeout=timeout)
         return result
 
-    def watch_trades(self, symbol: str) -> list[Trade]:
+    def watch_trades(self, symbol: str, timeout: float | None = None) -> list[Trade]:
         """Wait for the next public trades of ``symbol``."""
-        result: list[Trade] = self._websocket().watch_trades(symbol)
+        result: list[Trade] = self._websocket().watch_trades(symbol, timeout=timeout)
         return result
 
-    def watch_orders(self, symbol: str | None = None) -> Order:
+    def watch_orders(self, symbol: str | None = None, timeout: float | None = None) -> Order:
         """Wait for the next update of one of your orders."""
-        result: Order = self._websocket().watch_orders(symbol)
+        result: Order = self._websocket().watch_orders(symbol, timeout=timeout)
         return result
 
-    def watch_my_trades(self, symbol: str | None = None) -> Trade:
+    def watch_my_trades(
+        self, symbol: str | None = None, timeout: float | None = None
+    ) -> Trade:
         """Wait for your next fill."""
-        result: Trade = self._websocket().watch_my_trades(symbol)
+        result: Trade = self._websocket().watch_my_trades(symbol, timeout=timeout)
         return result
 
     # --- not offered by Bitpin yet ---------------------------------------------------

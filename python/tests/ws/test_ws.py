@@ -304,10 +304,14 @@ async def test_client_watch_methods_delegate(
     assert transports[0].closed
 
 
-def test_sync_client_watch_raises(fake_time: FakeTime) -> None:
-    client = Bitpin(clock=fake_time, sleep=fake_time.sync_sleep)
-    with pytest.raises(errors.NotSupported, match="AsyncBitpin"):
-        client.watch_ticker("BTC/IRT")
+def test_sync_client_without_keys_refuses_private_channels(fake_time: FakeTime) -> None:
+    client = Bitpin(
+        clock=fake_time,
+        sleep=fake_time.sync_sleep,
+        ws_transport_factory=lambda url, token: FakeTransport(url, token),
+    )
+    with pytest.raises(errors.AuthenticationError, match="private channels"):
+        client.watch_orders()
     client.close()
 
 

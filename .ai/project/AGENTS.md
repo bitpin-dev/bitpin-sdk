@@ -12,7 +12,7 @@ python/src/bitpin_sdk/
   _core/             sans-I/O: requests, parsers, errors, auth state, limiter
   _async/            AsyncBitpin, the hand-written client
   _sync/             Bitpin, from _async by scripts/gen_sync.py (generated; _compat.py is hand-written)
-  ws/                WebSocket (Centrifugo), async only
+  ws/                WebSocket (Centrifugo); ws/sync.py runs it on a thread for Bitpin
 ts/src/
   generated/spec.ts  from spec by scripts/gen_ts.py (generated)
   core/              pure logic: requests, parsers, errors, auth state, limiter

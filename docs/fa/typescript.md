@@ -36,7 +36,7 @@ await client.cancelOrderByIdentifier("bot-1");
 | `timeout` | ثانیه | میلی‌ثانیه، مثل ccxt JS |
 | لغو گروهی | `cancel_orders(ids=[...])` | `cancelOrders({ ids: [...] })` یا `{ identifiers: [...] }` |
 | ذخیرهٔ توکن | `FileTokenStore()` | `new FileTokenStore()` (در Node)، رابط ناهمگام `TokenStore` |
-| وب‌سوکت | فقط `AsyncBitpin` | داخلی |
+| وب‌سوکت | هر دو کلاینت | داخلی |
 
 ## متدها
 
