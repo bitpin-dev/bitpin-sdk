@@ -338,3 +338,15 @@ async def test_ccxt_style_constructor(fake_time: FakeTime) -> None:
     assert client.config.timeout == 2.5
     assert client.id == "bitpin"
     await client.close()
+
+
+def test_sync_context_manager_closes_owned_client(fake_time: FakeTime) -> None:
+    from bitpin_sdk import Bitpin
+
+    with Bitpin(clock=fake_time, sleep=fake_time.sync_sleep) as client:
+        assert not client._http.is_closed
+    assert client._http.is_closed
+    external = httpx.Client()
+    Bitpin(http_client=external).close()
+    assert not external.is_closed
+    external.close()
