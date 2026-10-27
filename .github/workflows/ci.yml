@@ -106,6 +106,7 @@ jobs:
           npm install "$GITHUB_WORKSPACE"/ts/*.tgz
           node --input-type=module -e "import { Bitpin, VERSION } from '@bitpin-dev/bitpin-sdk'; console.log(VERSION, typeof new Bitpin().fetchTicker)"
           node -e "const { Bitpin } = require('@bitpin-dev/bitpin-sdk'); console.log(typeof Bitpin)"
+          node -e "console.log(require('@bitpin-dev/bitpin-sdk/package.json').version)"
 
   go:
     name: Go (${{ matrix.go }})
