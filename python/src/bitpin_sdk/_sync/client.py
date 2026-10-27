@@ -211,14 +211,20 @@ class Bitpin:
                 headers=headers,
                 timeout=self.config.timeout,
             )
-        except httpx.TimeoutException as exc:
-            raise errors.RequestTimeout(
-                f"{req.endpoint_id}: request timed out", endpoint_id=req.endpoint_id
-            ) from exc
         except httpx.TransportError as exc:
-            raise errors.NetworkError(
-                f"{req.endpoint_id}: {type(exc).__name__}", endpoint_id=req.endpoint_id
-            ) from exc
+            error_class = (
+                errors.RequestTimeout
+                if isinstance(exc, httpx.TimeoutException)
+                else errors.NetworkError
+            )
+            reason = (
+                "request timed out" if error_class is errors.RequestTimeout else type(exc).__name__
+            )
+            error = error_class(f"{req.endpoint_id}: {reason}", endpoint_id=req.endpoint_id)
+            if req.auth == "credentials":
+                # The httpx exception holds the request, whose body has the credentials.
+                raise error from None
+            raise error from exc
         logger.debug("%s %s -> %s", req.method, req.url, response.status_code)
         body = _decode(response)
         if response.status_code >= 400:

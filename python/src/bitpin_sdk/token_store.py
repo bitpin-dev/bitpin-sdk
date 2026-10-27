@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import tempfile
 from pathlib import Path
 from typing import Protocol
 
@@ -65,20 +66,34 @@ class FileTokenStore:
     def load(self, key_id: str) -> Tokens | None:
         try:
             data = json.loads(self._path(key_id).read_text(encoding="utf-8"))
-            return Tokens(**data)
+            tokens = Tokens(**data)
         except (OSError, ValueError, TypeError):
             return None
+        valid = (
+            isinstance(tokens.access, str)
+            and isinstance(tokens.refresh, str)
+            and all(
+                isinstance(v, (int, float)) and not isinstance(v, bool)
+                for v in (tokens.access_exp, tokens.refresh_exp)
+            )
+        )
+        return tokens if valid else None
 
     def save(self, key_id: str, tokens: Tokens) -> None:
         path = self._path(key_id)
         self.directory.mkdir(mode=0o700, parents=True, exist_ok=True)
         with contextlib.suppress(OSError):
             os.chmod(self.directory, 0o700)
-        tmp = path.with_suffix(".tmp")
-        fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump(dataclasses.asdict(tokens), fh)
-        os.replace(tmp, path)
+        # A unique temp file per save: several processes may save at the same time.
+        fd, tmp = tempfile.mkstemp(dir=self.directory, prefix=f".{key_id}.", suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                json.dump(dataclasses.asdict(tokens), fh)
+            os.replace(tmp, path)
+        except BaseException:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp)
+            raise
 
     def clear(self, key_id: str) -> None:
         with contextlib.suppress(FileNotFoundError):

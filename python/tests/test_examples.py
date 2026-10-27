@@ -245,7 +245,9 @@ def test_market_maker_cancels_its_quotes_when_an_error_escapes(mock: respx.MockR
     assert cancel.call_count == 1
 
 
-def test_market_maker_ids_are_unique_per_run(mock: respx.MockRouter, capsys: pytest.CaptureFixture[str]) -> None:
+def test_market_maker_ids_are_unique_per_run(
+    mock: respx.MockRouter, capsys: pytest.CaptureFixture[str]
+) -> None:
     mock_market_data(mock)
     module = load("market_maker")
     module.main(["--symbol", "BTC/IRT", "--size", "1", "--iterations", "1"], sleep=lambda _: None)
