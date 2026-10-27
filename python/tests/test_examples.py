@@ -222,3 +222,41 @@ def test_stream_orderbook(mock: respx.MockRouter, capsys: pytest.CaptureFixture[
     out = capsys.readouterr().out
     assert "book  bid=1 ask=2" in out
     assert "trade buy 1 @ 1" in out
+
+
+def test_market_maker_cancels_its_quotes_when_an_error_escapes(mock: respx.MockRouter) -> None:
+    import httpx
+
+    from bitpin_sdk import errors
+
+    mock_market_data(mock)
+    route(mock, "private_post_odr_orders_bulk")
+    cancel = route(mock, "private_delete_odr_orders_bulk")
+    book = mock.route(method="GET", path__startswith="/api/v1/mth/orderbook/")
+    book.side_effect = [
+        httpx.Response(200, json={"asks": [["2", "1"]], "bids": [["1", "1"]]}),
+        *[httpx.ConnectError("down")] * 4,  # the GET is retried 3 times before it fails
+    ]
+    with pytest.raises(errors.NetworkError):
+        load("market_maker").main(
+            ["--symbol", "BTC/IRT", "--size", "0.001", "--iterations", "2", "--live"],
+            sleep=lambda _: None,
+        )
+    assert cancel.call_count == 1
+
+
+def test_market_maker_ids_are_unique_per_run(mock: respx.MockRouter, capsys: pytest.CaptureFixture[str]) -> None:
+    mock_market_data(mock)
+    module = load("market_maker")
+    module.main(["--symbol", "BTC/IRT", "--size", "1", "--iterations", "1"], sleep=lambda _: None)
+    first = capsys.readouterr().out
+    module.main(["--symbol", "BTC/IRT", "--size", "1", "--iterations", "1"], sleep=lambda _: None)
+    second = capsys.readouterr().out
+
+    def ids(text: str) -> set[str]:
+        import re
+
+        return set(re.findall(r'"clientOrderId": "([^"]+)"', text))
+
+    assert ids(first)
+    assert ids(first).isdisjoint(ids(second))
