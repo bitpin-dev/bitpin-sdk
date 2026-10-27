@@ -55,3 +55,17 @@ def test_old_entries_are_pruned() -> None:
     limiter.record(["a"])
     assert limiter.delay(["a"]) == 0.0
     assert len(limiter._calls["a"]) == 1
+
+
+def test_reserve_spreads_a_burst_over_windows() -> None:
+    limiter = SlidingWindowLimiter({"a": RateLimit(2, "sec")}, Clock())
+    assert [limiter.reserve(["a"]) for _ in range(8)] == [0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0]
+
+
+def test_reserve_respects_every_bucket() -> None:
+    limiter = SlidingWindowLimiter({"a": RateLimit(1, "sec"), "b": RateLimit(1, "min")}, Clock())
+    assert limiter.reserve(["a", "b"]) == 0.0
+    assert limiter.reserve(["a", "b"]) == 60.0
+    # Conservative: "a" already has a send booked at 60 s, so it waits past that booking.
+    # Over-waiting is safe; buckets that share bookings (bulk create/cancel) always go together.
+    assert limiter.reserve(["a"]) == 61.0
