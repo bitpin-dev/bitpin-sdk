@@ -5,7 +5,7 @@ description: Cut a release of one language's SDK with release-please, tags and r
 
 # Release
 
-Each language is a release-please component with its own version, `CHANGELOG.md` and tag: `python-v0.1.0`, later `go/v0.1.0` and `ts-v0.1.0`. Versions follow SemVer; before 1.0, a breaking change bumps the minor version.
+Each language is a release-please component with its own version, `CHANGELOG.md` and tag: `python-v0.1.0`, later `go/v0.1.0` and `ts-v0.1.0`. The first Python release (0.1.0) also comes from a release PR: the manifest starts at 0.0.0. Versions follow SemVer; before 1.0, a breaking change bumps the minor version.
 
 1. **Green main.** CI on `main` is green, and `sync-with-core` has been run since the last release if any endpoint changed.
 2. **Commits drive notes.** release-please reads Conventional Commits since the last tag: `feat` → minor, `fix` → patch, `feat!`/`BREAKING CHANGE:` → major (minor before 1.0). Fix misleading commit subjects by editing the release PR's changelog, not history.
