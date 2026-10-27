@@ -64,7 +64,7 @@ function compare(want: unknown, got: unknown, path: string, problems: string[]):
       problems.push(`${path}: expected ${want.length} items, got ${JSON.stringify(got)}`);
       return;
     }
-    want.forEach((w, i) => compare(w, got[i], `${path}[${i}]`, problems));
+    for (const [i, w] of want.entries()) compare(w, got[i], `${path}[${i}]`, problems);
     return;
   }
   if (typeof want === "object") {
