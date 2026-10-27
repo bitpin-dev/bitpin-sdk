@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import sys
 import time
+import uuid
 from collections.abc import Callable
 from decimal import ROUND_DOWN, ROUND_UP, Decimal
 
@@ -37,51 +38,52 @@ def main(argv: list[str] | None = None, *, sleep: Callable[[float], object] = ti
     args.add_argument("--iterations", type=int, default=10)
     opts = args.parse_args(argv)
 
+    run = f"mm-{uuid.uuid4().hex[:8]}"  # unique per run, so ids never collide across restarts
     with Bitpin(Config.from_env()) as client:
         client.load_markets()
         tick = client.market(opts.symbol)["precision"]["price"]
         live: list[str] = []
-        for i in range(opts.iterations):
-            book = client.fetch_order_book(opts.symbol, limit=1)
-            if not book["bids"] or not book["asks"]:
-                print("empty book, not quoting")
-            else:
-                mid = (book["bids"][0][0] + book["asks"][0][0]) / 2
-                bid, ask = quotes(mid, opts.spread_bps, tick)
-                orders = [
-                    {
-                        "symbol": opts.symbol,
-                        "type": "limit",
-                        "side": "buy",
-                        "amount": opts.size,
-                        "price": bid,
-                        "params": {"clientOrderId": f"mm-{i}-bid"},
-                    },
-                    {
-                        "symbol": opts.symbol,
-                        "type": "limit",
-                        "side": "sell",
-                        "amount": opts.size,
-                        "price": ask,
-                        "params": {"clientOrderId": f"mm-{i}-ask"},
-                    },
-                ]
-                if not opts.live:
-                    dry_run("cancel_orders", identifiers=live)
-                    dry_run("create_orders", orders=orders)
+        try:
+            for i in range(opts.iterations):
+                book = client.fetch_order_book(opts.symbol, limit=1)
+                if not book["bids"] or not book["asks"]:
+                    print("empty book, not quoting")
                 else:
-                    if live:
-                        client.cancel_orders(identifiers=live)
-                    try:
-                        client.create_orders(orders)
-                    except errors.InsufficientFunds:
-                        print("insufficient funds, skipping this round")
-                show("quotes", {"mid": mid, "bid": bid, "ask": ask})
-                live = [f"mm-{i}-bid", f"mm-{i}-ask"]
-            if i + 1 < opts.iterations:
-                sleep(opts.interval)
-        if opts.live and live:
-            client.cancel_orders(identifiers=live)
+                    mid = (book["bids"][0][0] + book["asks"][0][0]) / 2
+                    bid, ask = quotes(mid, opts.spread_bps, tick)
+                    ids = [f"{run}-{i}-bid", f"{run}-{i}-ask"]
+                    orders = [
+                        {
+                            "symbol": opts.symbol,
+                            "type": "limit",
+                            "side": side,
+                            "amount": opts.size,
+                            "price": price,
+                            "params": {"clientOrderId": cid},
+                        }
+                        for side, price, cid in (("buy", bid, ids[0]), ("sell", ask, ids[1]))
+                    ]
+                    if not opts.live:
+                        dry_run("cancel_orders", identifiers=live)
+                        dry_run("create_orders", orders=orders)
+                        live = ids
+                    else:
+                        if live:
+                            client.cancel_orders(identifiers=live)
+                            live = []
+                        try:
+                            client.create_orders(orders)
+                            live = ids
+                        except errors.InsufficientFunds:
+                            print("insufficient funds, skipping this round")
+                    show("quotes", {"mid": mid, "bid": bid, "ask": ask})
+                if i + 1 < opts.iterations:
+                    sleep(opts.interval)
+        finally:
+            # Whatever ends the loop (Ctrl-C, a network error, the last iteration),
+            # never leave quotes resting unattended.
+            if opts.live and live:
+                client.cancel_orders(identifiers=live)
     return 0
 
 
