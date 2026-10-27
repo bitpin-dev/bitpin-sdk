@@ -89,8 +89,14 @@ class TokenState:
         )
         return self.tokens
 
-    def expire_access(self) -> None:
-        """Mark the access token unusable (server said 401) so the next call refreshes it."""
+    def expire_access(self, token: str | None = None) -> None:
+        """Mark the access token unusable (server said 401) so the next call refreshes it.
+
+        With ``token``, only if it is still the current one: a late 401 for a token that
+        another request already replaced must not throw the fresh token away.
+        """
+        if token is not None and self.access_token != token:
+            return
         if self.tokens is not None:
             self.tokens = Tokens(
                 self.tokens.access, self.tokens.refresh, 0.0, self.tokens.refresh_exp
