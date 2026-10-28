@@ -1,0 +1,43 @@
+{
+  "http_server": {
+    "port": 18000
+  },
+  "client": {
+    "token": {
+      "hmac_secret_key": "test-hmac"
+    },
+    "allowed_origins": [
+      "*"
+    ],
+    "allow_anonymous_connect_without_token": true
+  },
+  "http_api": {
+    "key": "test-api"
+  },
+  "channel": {
+    "namespaces": [
+      {
+        "name": "market",
+        "allow_subscribe_for_client": true,
+        "allow_subscribe_for_anonymous": true
+      },
+      {
+        "name": "orderbook",
+        "allow_subscribe_for_client": true,
+        "allow_subscribe_for_anonymous": true
+      },
+      {
+        "name": "matches",
+        "allow_subscribe_for_client": true,
+        "allow_subscribe_for_anonymous": true
+      },
+      {
+        "name": "user",
+        "allow_user_limited_channels": true
+      }
+    ]
+  },
+  "health": {
+    "enabled": true
+  }
+}
