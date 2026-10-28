@@ -28,3 +28,7 @@ updates:
     directory: /go
     schedule: { interval: weekly }
     commit-message: { prefix: build, include: scope }
+  - package-ecosystem: maven
+    directory: /java
+    schedule: { interval: weekly }
+    commit-message: { prefix: build, include: scope }

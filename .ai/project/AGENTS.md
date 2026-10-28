@@ -1,6 +1,6 @@
 # bitpin-sdk: project instructions
 
-A monorepo of hand-written SDKs for Bitpin's public API, one per language, all generated from and tested against one spec: Python (`python/`), TypeScript (`ts/`) and Go (`go/`).
+A monorepo of hand-written SDKs for Bitpin's public API, one per language, all generated from and tested against one spec: Python (`python/`), TypeScript (`ts/`), Go (`go/`) and Java (`java/`).
 
 ## Layout
 
@@ -22,6 +22,11 @@ go/                  module github.com/bitpin-dev/bitpin-sdk/go, package bitpin
   spec_gen.go        from spec by scripts/gen_go.py (generated)
   client.go, ws.go   Client; parse.go, request.go, errors.go, ratelimit.go, auth.go, tokenstore.go
   examples/          quickstart, marketmaker (dry-run unless -live)
+java/                Maven io.github.bitpin-dev:bitpin-sdk, package io.github.bitpindev.bitpin
+  src/main/java/io/github/bitpindev/bitpin/
+    Spec.java        from spec by scripts/gen_java.py (generated)
+    Bitpin.java      the client; BitpinWebSocket.java, Parse.java, Requests.java, Errors.java, ...
+  examples/          Quickstart.java, MarketMaker.java (dry-run unless --live)
 docs/en, docs/fa     the docs site; every page exists in both languages
 examples/{python,ts}/ runnable examples, dry-run unless --live
 ```
@@ -62,7 +67,17 @@ gofmt -l . && go vet ./... && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 .
 cd ../python && uv run python ../scripts/gen_go.py   # after editing spec/bitpin.yaml (needs gofmt)
 ```
 
-Live, read-only suites (need `BITPIN_LIVE=1`, never in CI, see issue #4): `uv run pytest -m live`, `npm run test:live`, `go test -tags live -run Live ./...`.
+Java, from `java/` (JDK ≥ 21; `.java-version` pins 25; the wrapper brings Maven 3.10.0):
+
+```bash
+./mvnw -B verify                               # tests, javadoc; gate: 90 % lines, 85 % branches
+./mvnw -B spotless:check                       # google-java-format (spotless:apply fixes)
+cd ../python && uv run python ../scripts/gen_java.py   # after editing spec/bitpin.yaml
+```
+
+`CentrifugoIntegrationTest` runs the real WebSocket client against a local Centrifugo (CI starts one): `./mvnw test -Dgroups=centrifugo -Dtest.excludedGroups=live`.
+
+Live, read-only suites (need `BITPIN_LIVE=1`, never in CI, see issue #4): `uv run pytest -m live`, `npm run test:live`, `go test -tags live -run Live ./...`, `./mvnw verify -Plive`.
 
 Each generator has `--check`; CI runs them all, so a stale generated file fails the build.
 
@@ -70,9 +85,9 @@ Each generator has `--check`; CI runs them all, so a stale generated file fails 
 
 - Unified methods use ccxt names, arguments and result structures. Bitpin-only methods get plain names (`fetch_order_history`, `verify_withdraw_otp`).
 - Numbers are `Decimal` end to end; requests carry plain decimal strings.
-- Python client logic lives in `_async/client.py` only; regenerate `_sync/`. TypeScript (`ts/src/client.ts`) and Go (`go/client.go`) mirror the same behaviour; a behaviour change lands in all three, with tests in all three.
+- Python client logic lives in `_async/client.py` only; regenerate `_sync/`. TypeScript (`ts/src/client.ts`), Go (`go/client.go`) and Java (`java/.../Bitpin.java`) mirror the same behaviour; a behaviour change lands in all four, with tests in all four.
 - Anything Bitpin lacks is a `has: false` entry with an en+fa message in the spec, plus a method raising `not_supported(...)`.
-- Conventional Commits; PR titles are checked. Scopes: `python`, `ts`, `go`, `spec`, `docs`, `ci`, `examples`.
+- Conventional Commits; PR titles are checked. Scopes: `python`, `ts`, `go`, `java`, `spec`, `docs`, `ci`, `examples`.
 - English for code, comments and commits; user docs in English and Persian.
 
 ## Gotchas
@@ -92,6 +107,7 @@ Read the rule that matches your task before editing:
 | `.ai/project/rules/python.md` | changing `python/` |
 | `.ai/project/rules/typescript.md` | changing `ts/` or `examples/ts/` |
 | `.ai/project/rules/go.md` | changing `go/` |
+| `.ai/project/rules/java.md` | changing `java/` |
 | `.ai/project/rules/testing.md` | writing or changing tests |
 | `.ai/project/rules/docs.md` | changing `docs/`, READMEs, `llms.txt` or examples |
 | `.ai/project/rules/security.md` | touching auth, tokens, withdrawals, logging, dependencies or CI |

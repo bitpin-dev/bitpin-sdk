@@ -2,7 +2,7 @@
 
 The official SDK for the [Bitpin](https://bitpin.ir) exchange API. It is built for market makers, VIP traders and the AI agents that write their bots.
 
-- **Python, sync and async.** `Bitpin` and `AsyncBitpin` have the same methods. Go and TypeScript are planned.
+- **Python, sync and async.** `Bitpin` and `AsyncBitpin` have the same methods. The same SDK exists in [TypeScript](typescript.md), [Go](go.md) and [Java](java.md).
 - **ccxt-shaped.** Method names and result structures follow [ccxt](https://github.com/ccxt/ccxt), so a ccxt bot ports with small changes. See [Migrating from ccxt](migrating-from-ccxt.md).
 - **Exact numbers.** Prices and amounts are `decimal.Decimal`; nothing passes through float.
 - **Safe defaults.** Tokens are cached and refreshed automatically, the client stays under Bitpin's rate limits, and only idempotent requests are retried. Orders and withdrawals are never retried.

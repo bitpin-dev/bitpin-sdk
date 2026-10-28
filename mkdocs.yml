@@ -29,6 +29,7 @@ markdown_extensions:
   - toc: { permalink: true }
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.tabbed: { alternate_style: true }
 
 plugins:
   - search
@@ -58,6 +59,7 @@ plugins:
             Migrating from ccxt: مهاجرت از ccxt
             TypeScript: تایپ‌اسکریپت
             Go: Go
+            Java: جاوا
             FAQ: پرسش‌های رایج
 
 nav:
@@ -75,4 +77,5 @@ nav:
   - Migrating from ccxt: migrating-from-ccxt.md
   - TypeScript: typescript.md
   - Go: go.md
+  - Java: java.md
   - FAQ: faq.md

@@ -6,7 +6,7 @@
 
 SDK رسمی API صرافی [بیت‌پین](https://bitpin.ir)، برای بازارگردان‌ها، معامله‌گران VIP و ایجنت‌های هوش مصنوعی‌ای که ربات‌هایشان را می‌نویسند.
 
-- پایتون (`Bitpin` همگام و `AsyncBitpin` ناهمگام)، تایپ‌اسکریپت (بستهٔ `@bitpin-dev/bitpin-sdk` در npm) و Go (`github.com/bitpin-dev/bitpin-sdk/go`)، همه در همین مخزن.
+- پایتون (`Bitpin` همگام و `AsyncBitpin` ناهمگام)، تایپ‌اسکریپت (بستهٔ `@bitpin-dev/bitpin-sdk` در npm)، Go (`github.com/bitpin-dev/bitpin-sdk/go`) و جاوا (`io.github.bitpin-dev:bitpin-sdk` در Maven Central)، همه در همین مخزن.
 - نام متدها و ساختار خروجی مثل ccxt است؛ ربات‌های ccxt با تغییر کمی منتقل می‌شوند.
 - همهٔ قیمت‌ها و مقدارها `Decimal` هستند.
 - توکن‌ها خودکار نگه‌داری و تمدید می‌شوند؛ کلاینت زیر محدودیت نرخ بیت‌پین می‌ماند و می‌توانید سقف VIP خود را تنظیم کنید.
@@ -44,6 +44,7 @@ with Bitpin(Config.from_env()) as client:          # BITPIN_API_KEY و BITPIN_SE
 | [`python/`](python) | SDK پایتون ([تغییرات](python/CHANGELOG.md)) |
 | [`ts/`](ts) | SDK تایپ‌اسکریپت، بستهٔ `@bitpin-dev/bitpin-sdk` در npm ([تغییرات](ts/CHANGELOG.md)، [راهنما](docs/fa/typescript.md)) |
 | [`go/`](go) | SDK زبان Go، ماژول `github.com/bitpin-dev/bitpin-sdk/go` ([تغییرات](go/CHANGELOG.md)، [راهنما](docs/fa/go.md)) |
+| [`java/`](java) | SDK جاوا، `io.github.bitpin-dev:bitpin-sdk` در Maven Central ([تغییرات](java/CHANGELOG.md)، [راهنما](docs/fa/java.md)) |
 | [`examples/`](examples) | مثال‌های اجرایی پایتون و تایپ‌اسکریپت، از جمله اسکلت یک ربات بازارگردان |
 | [`docs/en`](docs/en)، [`docs/fa`](docs/fa) | سایت مستندات به انگلیسی و فارسی |
 | [`AGENTS.md`](AGENTS.md)، [`.ai/project/`](.ai/project) | دستورالعمل‌ها، قواعد و مهارت‌ها برای ایجنت‌های کدنویس |

@@ -84,6 +84,24 @@
         }
       ],
       "initial-version": "0.1.0"
+    },
+    "java": {
+      "release-type": "maven",
+      "package-name": "io.github.bitpin-dev:bitpin-sdk",
+      "component": "java",
+      "changelog-path": "CHANGELOG.md",
+      "skip-snapshot": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/main/java/io/github/bitpindev/bitpin/Version.java"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        }
+      ],
+      "initial-version": "0.1.0"
     }
   }
 }

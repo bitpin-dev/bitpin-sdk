@@ -2,7 +2,8 @@ name: Release
 
 # release-please keeps one release PR per language. Merging it tags the version
 # (python-vX.Y.Z), creates the GitHub Release with notes from the changelog, and
-# publishes that language's package.
+# publishes that language's package. A manual run publishes an existing tag again, for when
+# its publish step failed.
 
 on:
   push:
@@ -10,8 +11,11 @@ on:
   workflow_dispatch:
     inputs:
       ts-tag:
-        description: "Publish an existing TypeScript release again, e.g. ts-v0.1.2 (when its publish step failed)"
-        required: true
+        description: "Publish an existing TypeScript release again, e.g. ts-v0.1.2"
+        required: false
+      java-tag:
+        description: "Upload an existing Java release to Maven Central again, e.g. java-v0.1.0"
+        required: false
 
 permissions:
   contents: read
@@ -30,6 +34,8 @@ jobs:
       ts-tag: ${{ steps.release.outputs['ts--tag_name'] }}
       go-released: ${{ steps.release.outputs['go--release_created'] }}
       go-tag: ${{ steps.release.outputs['go--tag_name'] }}
+      java-released: ${{ steps.release.outputs['java--release_created'] }}
+      java-tag: ${{ steps.release.outputs['java--tag_name'] }}
     steps:
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
@@ -150,3 +156,48 @@ jobs:
         run: |
           version="${TAG#go/}"
           curl -fsS "https://proxy.golang.org/github.com/bitpin-dev/bitpin-sdk/go/@v/${version}.info"
+
+  publish-java:
+    # Signs the jars and uploads them to the Maven Central Portal without publishing: a
+    # maintainer presses Publish on central.sonatype.com, because a Maven Central release
+    # can never be deleted. Secrets live in the maven-central environment.
+    needs: release-please
+    if: >-
+      always() &&
+      (needs.release-please.outputs.java-released == 'true' ||
+       (github.event_name == 'workflow_dispatch' && startsWith(inputs.java-tag, 'java-v')))
+    runs-on: ubuntu-latest
+    environment:
+      name: maven-central
+      url: https://central.sonatype.com/publishing/deployments
+    permissions:
+      contents: write  # attach the jars to the GitHub Release
+    defaults:
+      run:
+        working-directory: java
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.java-tag || needs.release-please.outputs.java-tag }}
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - run: ./mvnw -B -ntp verify
+      - name: Sign and upload to the Maven Central Portal
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./mvnw -B -ntp deploy -Prelease -DskipTests
+      - name: Attach the jars to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.java-tag || needs.release-please.outputs.java-tag }}
+        run: gh release upload "$TAG" target/bitpin-sdk-*.jar target/bitpin-sdk-*.asc --repo "$GITHUB_REPOSITORY" --clobber

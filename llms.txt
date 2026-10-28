@@ -35,6 +35,10 @@ npm `@bitpin-dev/bitpin-sdk` (Node ≥ 22): one async class `Bitpin`, same behav
 
 Module `github.com/bitpin-dev/bitpin-sdk/go`, package `bitpin` (Go ≥ 1.26): `client, err := bitpin.New(bitpin.ConfigFromEnv())`; every method takes `ctx` first and returns `(T, error)` (`FetchTicker`, `CreateOrder(ctx, symbol, typ, side, amount, price, bitpin.Params{...})`, `CancelOrders(ctx, ids, identifiers)`, `WatchOrderBook`). Results are structs with ccxt field names and `Info`; numbers are shopspring `decimal.Decimal`. Errors: `errors.Is(err, bitpin.ErrInsufficientFunds)` follows the ccxt hierarchy. [Go guide](https://bitpin-dev.github.io/bitpin-sdk/go/).
 
+## Java
+
+Maven Central `io.github.bitpin-dev:bitpin-sdk`, package `io.github.bitpindev.bitpin` (Java ≥ 21): `try (Bitpin client = new Bitpin(Config.fromEnv().build()))`; methods block and the client is thread-safe (use virtual threads), ccxt names (`fetchTicker`, `createOrder(symbol, type, side, amount, price, Map.of("clientOrderId", "x"))`, `cancelOrders(ids, identifiers)`, `watchOrderBook(symbol, timeout)`), optional arguments as overloads or `null`. Results are records with ccxt names and `info()`; numbers are `BigDecimal`. Errors are unchecked: `InsufficientFundsException` extends `ExchangeException` extends `BitpinException` (`ccxtName()` gives the ccxt class). [Java guide](https://bitpin-dev.github.io/bitpin-sdk/java/).
+
 ## Docs
 
 - [Quickstart](https://bitpin-dev.github.io/bitpin-sdk/quickstart/)

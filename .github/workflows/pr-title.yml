@@ -30,6 +30,7 @@ jobs:
             python
             go
             ts
+            java
             spec
             docs
             examples

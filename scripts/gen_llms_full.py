@@ -24,6 +24,7 @@ ORDER = [
     "migrating-from-ccxt",
     "typescript",
     "go",
+    "java",
     "faq",
 ]
 

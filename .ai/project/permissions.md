@@ -14,7 +14,7 @@ What an agent may do in this repository without asking, and what needs the user'
 Say the exact command and what it changes:
 
 - `git push`, opening or merging a PR, creating tags or GitHub releases.
-- Publishing a package (PyPI, npm, Go tags).
+- Publishing a package (PyPI, npm, Go tags, Maven Central).
 - Changing `.github/workflows/`, `release-please-config.json`, branch protection or repository settings.
 - Adding or upgrading a dependency.
 - Any request to the live Bitpin API, including `pytest -m live`.
