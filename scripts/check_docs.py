@@ -1,7 +1,8 @@
 """Check that the English and Persian docs stay complete and in sync with the code and spec.
 
 - every page in docs/en has a twin in docs/fa (and the other way round)
-- every public client method is documented in both languages and in llms.txt
+- every public client method is documented in both languages and in llms.txt, and every
+  TypeScript, Go and Java method on its language page
 - the rate-limit pages list every bucket with its default, the not-supported pages list
   every missing capability
 - both READMEs exist and link to each other
@@ -69,6 +70,24 @@ def go_methods() -> list[str]:
     return sorted(names)
 
 
+def java_methods() -> list[str]:
+    """Public methods of the Java client, read from its source."""
+    source = (
+        ROOT
+        / "java"
+        / "src"
+        / "main"
+        / "java"
+        / "io"
+        / "github"
+        / "bitpindev"
+        / "bitpin"
+        / "Bitpin.java"
+    ).read_text(encoding="utf-8")
+    names = re.findall(r"^  public (?:[\w<>, ?\[\]]+ )?([a-z][A-Za-z]+)\(", source, re.MULTILINE)
+    return sorted(set(names) - {"toString"})
+
+
 def read_dir(path: Path) -> str:
     return "\n".join(p.read_text(encoding="utf-8") for p in sorted(path.glob("*.md")))
 
@@ -106,6 +125,13 @@ def check() -> list[str]:
         for method in go_methods():
             if f"`{method}" not in text:
                 problems.append(f"docs/{lang}/go.md: Go method {method} is not documented")
+
+    for lang in ("en", "fa"):
+        page = ROOT / "docs" / lang / "java.md"
+        text = page.read_text(encoding="utf-8") if page.exists() else ""
+        for method in java_methods():
+            if f"`{method}" not in text:
+                problems.append(f"docs/{lang}/java.md: Java method {method} is not documented")
 
     for lang in ("en", "fa"):
         page = ROOT / "docs" / lang / "rate-limits.md"

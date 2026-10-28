@@ -24,3 +24,6 @@ ts/dist/
 ts/coverage/
 *.tgz
 go/coverage.out
+
+# Java build output
+java/target/
