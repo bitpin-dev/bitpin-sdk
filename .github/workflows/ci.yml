@@ -163,7 +163,7 @@ jobs:
       - name: Compile the examples
         run: |
           ./mvnw -B -ntp -q dependency:build-classpath -Dmdep.outputFile=target/classpath.txt
-          javac -Xlint:all -Werror -cp "target/classes:$(cat target/classpath.txt)" -d target/examples examples/*.java
+          javac --release 21 -Xlint:all -Werror -cp "target/classes:$(cat target/classpath.txt)" -d target/examples examples/*.java
       - name: The real WebSocket client against a local Centrifugo
         env:
           CENTRIFUGO_VERSION: 6.10.2
