@@ -281,7 +281,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.10.4</version>
+        <version>3.11.0</version>
         <configuration>
           <java>
             <includes>
@@ -293,7 +293,7 @@
               <exclude>src/main/java/io/github/bitpindev/bitpin/Spec.java</exclude>
             </excludes>
             <googleJavaFormat>
-              <!-- 1.37.0 fails inside spotless 3.10.4 (InvocationTargetException) -->
+              <!-- 1.37.0 fails inside spotless 3.11.0 (InvocationTargetException) -->
               <version>1.36.0</version>
             </googleJavaFormat>
             <removeUnusedImports/>
